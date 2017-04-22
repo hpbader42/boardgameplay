@@ -3,8 +3,10 @@
   "version": "0.0.1",
   "description": "WebRTC codelab",
   "dependencies": {
+    "express": "^4.15.2",
     "node-static": "0.7.7",
-    "socket.io": "1.2.0"
+    "os": "^0.1.1",
+    "socket.io": "^1.2.0"
   },
   "main": "index.js",
   "devDependencies": {},
