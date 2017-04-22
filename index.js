@@ -1,17 +1,32 @@
-'use strict';
+// 'use strict';
 
-var os = require('os');
-var nodeStatic = require('node-static');
 var http = require('http');
-var socketIO = require('socket.io');
+var express = require('express'),
+app = module.exports.app = express();
 
-var fileServer = new(nodeStatic.Server)();
-var app = http.createServer(function(req, res) {
-  fileServer.serve(req, res);
-}).listen(8080);
+console.log(express.static(__dirname + '/js'));
+app.use(express.static(__dirname + '/js'));
+app.all('*', function(req, res){
+res.sendfile("index.html");
+});
+var server = http.createServer(app);
+server.listen(process.env.PORT || 5000);
 
-var io = socketIO.listen(app);
-io.sockets.on('connection', function(socket) {
+var io = require('socket.io').listen(server);
+io.sockets.on('connection', function (socket){
+
+// var os = require('os');
+// var nodeStatic = require('node-static');
+// var http = require('http');
+// var socketIO = require('socket.io');
+
+// var fileServer = new(nodeStatic.Server)();
+// var app = http.createServer(function(req, res) {
+//   fileServer.serve(req, res);
+// }).listen(8080);
+
+// var io = socketIO.listen(app);
+// io.sockets.on('connection', function(socket) {
 
   // convenience function to log server messages on the client
   function log() {
