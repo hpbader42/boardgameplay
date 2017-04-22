@@ -5,4 +5,20 @@
   "dependencies": {
     "node-static": "0.7.7",
     "socket.io": "1.2.0"
-  }}
+  },
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git.heroku.com/boardgameplay.git"
+  },
+  "keywords": [
+    "heroku",
+    "node"
+  ],
+  "author": "abhishek",
+  "license": "ISC"
+}
