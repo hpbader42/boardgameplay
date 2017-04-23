@@ -159,6 +159,7 @@ function maybeStart() {
 
 window.onbeforeunload = function() {
   sendMessage('bye');
+  socket.close();
 };
 
 /////////////////////////////////////////////////////////
