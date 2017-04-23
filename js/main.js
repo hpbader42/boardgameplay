@@ -142,6 +142,17 @@ function maybeStart() {
       doCall();
     }
   }
+  console.log("testing");
+  if (isStarted && typeof localStream !== 'undefined' && isChannelReady) {
+	    console.log('>>>>>> creating peer connection');
+	    createPeerConnection();
+	    pc.addStream(localStream);
+	    isStarted = true;
+	    console.log('isInitiator', isInitiator);
+	    if (isInitiator) {
+	      doCall();
+	    }
+	  }
 }
 
 window.onbeforeunload = function() {
