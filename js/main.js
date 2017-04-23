@@ -22,9 +22,9 @@ var sdpConstraints = {
 
 /////////////////////////////////////////////
 
-var room = 'foo';
+//var room = 'foo';
 // Could prompt for room name:
-// room = prompt('Enter room name:');
+var room = prompt('Enter room name:');
 
 var socket = io.connect();
 
@@ -95,6 +95,7 @@ var audioOutputSelect = document.querySelector('audioOutput');
 var localVideo = document.querySelector('#localVideo');
 var remoteVideo = document.querySelector('#remoteVideo');
 var remoteVideo2 = document.querySelector('#remoteVid2');
+var numPeeps = 1;
 
 
 navigator.mediaDevices.getUserMedia({
@@ -132,8 +133,9 @@ if (location.hostname !== 'localhost') {
 
 function maybeStart() {
   console.log('>>>>>>> maybeStart() ', isStarted, localStream, isChannelReady);
-  if (!isStarted && typeof localStream !== 'undefined' && isChannelReady) {
-    console.log('>>>>>> creating peer connection');
+  //if (!isStarted && typeof localStream !== 'undefined' && isChannelReady) {
+  if ( typeof localStream !== 'undefined' && isChannelReady) {
+	console.log('>>>>>> creating peer connection');
     createPeerConnection();
     pc.addStream(localStream);
     isStarted = true;
@@ -142,17 +144,8 @@ function maybeStart() {
       doCall();
     }
   }
-  console.log("testing");
-  if (isStarted && typeof localStream !== 'undefined' && isChannelReady) {
-	    console.log('>>>>>> creating peer connection');
-	    createPeerConnection();
-	    pc.addStream(localStream);
-	    isStarted = true;
-	    console.log('isInitiator', isInitiator);
-	    if (isInitiator) {
-	      doCall();
-	    }
-	  }
+  console.log("testing3");
+
 }
 
 window.onbeforeunload = function() {
@@ -191,12 +184,14 @@ function handleIceCandidate(event) {
 
 function handleRemoteStreamAdded(event) {
   console.log('Remote stream added.');
-  if(remoteVideo.src === null){
+  if(numPeeps ===2 ){
 	  remoteVideo2.src = window.URL.createObjectURL(event.stream);
   }else{
 	  remoteVideo.src = window.URL.createObjectURL(event.stream);	  
+	  numPeeps =2;
   }
   console.log(window.URL.createObjectURL(event.stream));
+  console.log('Remote video source is: ' + remoteVideo.src);
   remoteStream = event.stream;
    
 }
