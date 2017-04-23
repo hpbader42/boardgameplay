@@ -90,11 +90,15 @@ socket.on('message', function(message) {
 
 ////////////////////////////////////////////////////
 
+var audioInputSelect = document.querySelector('audioSource');
+var audioOutputSelect = document.querySelector('audioOutput');
 var localVideo = document.querySelector('#localVideo');
 var remoteVideo = document.querySelector('#remoteVideo');
+var remoteVideo2 = document.querySelector('#remoteVid2');
+
 
 navigator.mediaDevices.getUserMedia({
-  audio: false,
+  audio: true,
   video: true
 })
 .then(gotStream)
@@ -103,6 +107,8 @@ navigator.mediaDevices.getUserMedia({
 });
 
 function gotStream(stream) {
+	
+	//called on initiation - after camera and mic are obtain
   console.log('Adding local stream.');
   localVideo.src = window.URL.createObjectURL(stream);
   localStream = stream;
@@ -174,8 +180,14 @@ function handleIceCandidate(event) {
 
 function handleRemoteStreamAdded(event) {
   console.log('Remote stream added.');
-  remoteVideo.src = window.URL.createObjectURL(event.stream);
+  if(remoteVideo.src){
+	  remoteVideo2.src = window.URL.createObjectURL(event.stream);
+  }else{
+	  remoteVideo.src = window.URL.createObjectURL(event.stream);	  
+  }
   remoteStream = event.stream;
+  
+  
 }
 
 function handleCreateOfferError(event) {
@@ -197,7 +209,7 @@ function doAnswer() {
 
 function setLocalAndSendMessage(sessionDescription) {
   // Set Opus as the preferred codec in SDP if Opus is present.
-  //  sessionDescription.sdp = preferOpus(sessionDescription.sdp);
+  sessionDescription.sdp = preferOpus(sessionDescription.sdp);
   pc.setLocalDescription(sessionDescription);
   console.log('setLocalAndSendMessage sending message', sessionDescription);
   sendMessage(sessionDescription);
@@ -236,11 +248,6 @@ function requestTurn(turnURL) {
   }
 }
 
-function handleRemoteStreamAdded(event) {
-  console.log('Remote stream added.');
-  remoteVideo.src = window.URL.createObjectURL(event.stream);
-  remoteStream = event.stream;
-}
 
 function handleRemoteStreamRemoved(event) {
   console.log('Remote stream removed. Event: ', event);
