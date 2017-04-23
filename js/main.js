@@ -180,7 +180,7 @@ function handleIceCandidate(event) {
 
 function handleRemoteStreamAdded(event) {
   console.log('Remote stream added.');
-  if(remoteVideo.src === Null){
+  if(remoteVideo.src === null){
 	  remoteVideo2.src = window.URL.createObjectURL(event.stream);
   }else{
 	  remoteVideo.src = window.URL.createObjectURL(event.stream);	  
