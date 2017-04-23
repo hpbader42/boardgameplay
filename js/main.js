@@ -3,9 +3,12 @@
 var isChannelReady = false;
 var isInitiator = false;
 var isStarted = false;
+
+
 var localStream;
-var pc;
 var remoteStream;
+
+var pc;
 var turnReady;
 
 var pcConfig = {
@@ -98,6 +101,7 @@ var remoteVideo2 = document.querySelector('#remoteVid2');
 var numPeeps = 1;
 
 
+
 navigator.mediaDevices.getUserMedia({
   audio: true,
   video: true
@@ -112,11 +116,16 @@ function gotStream(stream) {
 	//called on initiation - after camera and mic are obtain
   console.log('Adding local stream.');
   localVideo.src = window.URL.createObjectURL(stream);
+  //localVideo.srcObject = stream;
   localStream = stream;
   sendMessage('got user media');
   if (isInitiator) {
     maybeStart();
   }
+}
+
+function gotRemoteStream(stream){
+	
 }
 
 var constraints = {
@@ -157,6 +166,7 @@ window.onbeforeunload = function() {
 function createPeerConnection() {
   try {
     pc = new RTCPeerConnection(null);
+    
     pc.onicecandidate = handleIceCandidate;
     pc.onaddstream = handleRemoteStreamAdded;
     pc.onremovestream = handleRemoteStreamRemoved;
@@ -178,20 +188,23 @@ function handleIceCandidate(event) {
       candidate: event.candidate.candidate
     });
   } else {
-    console.log('End of candidates.');
+    Fconsole.log('End of candidates.');
   }
 }
 
 function handleRemoteStreamAdded(event) {
   console.log('Remote stream added.');
   if(numPeeps ===2 ){
-	  remoteVideo2.src = window.URL.createObjectURL(event.stream);
+	  //remoteVideo2.src = window.URL.createObjectURL(event.stream);
+	  remoteVideo2.srcObject = event.stream;
   }else{
-	  remoteVideo.src = window.URL.createObjectURL(event.stream);	  
+	  //remoteVideo.src = window.URL.createObjectURL(event.stream);	  
+	  remoteVideo.srcObject = event.stream;
 	  numPeeps =2;
   }
   console.log(window.URL.createObjectURL(event.stream));
   console.log('Remote video source is: ' + remoteVideo.src);
+  
   remoteStream = event.stream;
    
 }
