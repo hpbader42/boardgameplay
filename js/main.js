@@ -189,7 +189,7 @@ function handleIceCandidate(event) {
       candidate: event.candidate.candidate
     });
   } else {
-    Fconsole.log('End of candidates.');
+    console.log('End of candidates.');
   }
 }
 
