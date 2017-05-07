@@ -17,19 +17,36 @@ var pcConfig = {
   }]
 };
 
+////////////////////////////////////////////////////
+
+var audioInputSelect = document.querySelector('audioSource');
+var audioOutputSelect = document.querySelector('audioOutput');
+var localVideo = document.querySelector('#localVideo');
+var remoteVideo = document.querySelector('#remoteVideo');
+var remoteVideo2 = document.querySelector('#remoteVideo2');
+var remoteVideo3 = document.querySelector('#remoteVideo3');
+
+var remoteVideoArray = new Array();
+var vidArrayIndex = 0;
+var numPeople = 0;
+
+///////////////////////////////////////////////////////
+
 // Set up audio and video regardless of what devices are present.
 var sdpConstraints = {
   offerToReceiveAudio: true,
   offerToReceiveVideo: true
 };
 
-/////////////////////////////////////////////
+//////////////////////////////////////////////////////////
 
 //var room = 'foo';
 // Could prompt for room name:
 var room = prompt('Enter room name:');
 
 var socket = io.connect();
+
+////////////////////////////////////////////////////////////////
 
 if (room !== '') {
   socket.emit('create or join', room);
@@ -91,14 +108,7 @@ socket.on('message', function(message) {
   }
 });
 
-////////////////////////////////////////////////////
 
-var audioInputSelect = document.querySelector('audioSource');
-var audioOutputSelect = document.querySelector('audioOutput');
-var localVideo = document.querySelector('#localVideo');
-var remoteVideo = document.querySelector('#remoteVideo');
-var remoteVideo2 = document.querySelector('#remoteVid2');
-var numPeeps = 1;
 
 
 
@@ -122,10 +132,6 @@ function gotStream(stream) {
   if (isInitiator) {
     maybeStart();
   }
-}
-
-function gotRemoteStream(stream){
-	
 }
 
 var constraints = {
