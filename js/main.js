@@ -27,6 +27,8 @@ var remoteVideo2 = document.querySelector('#remoteVideo2');
 var remoteVideo3 = document.querySelector('#remoteVideo3');
 
 var remoteVideoArray = new Array();
+var socketArray = new Array();
+var streamAray = new Array();
 var vidArrayIndex = 0;
 var numPeople = 0;
 
@@ -48,24 +50,72 @@ var socket = io.connect();
 
 ////////////////////////////////////////////////////////////////
 
+function setVideoDisplays(){
+	  
+	var numVids = remoteVideoArray.length;
+	
+	if(numVids){
+		if(numVids === 1){
+			remoteVideo.src = remoteVideoArray[0];
+		}
+		else if(numVids ===2){
+			remoteVideo.src = remoteVideoArray[0];
+			remoteVideo2.src = remoteVideoArray[1];
+		}else{
+			remoteVideo.src = remoteVideoArray[vidArrayIndex+0];
+			remoteVideo2.src = remoteVideoArray[vidArrayIndex+1];
+			remoteVideo3.src = remoteVideoArray[vidArrayIndex+2];
+		}
+			
+	}
+	console.log("number of videos = "+ numVids);
+	remoteVideoArray.push(event.stream);
+	  
+	     
+}
+
 if (room !== '') {
   socket.emit('create or join', room);
   console.log('Attempted to create or  join room', room);
 }
 
-socket.on('created', function(room) {
+socket.on('created', function(room, client) {
   console.log('Created room ' + room);
+  socketArray.push(client);
   isInitiator = true;
+  
 });
 
 socket.on('full', function(room) {
   console.log('Room ' + room + ' is full');
 });
 
-socket.on('join', function (room){
+socket.on('join', function (room, client){
   console.log('Another peer made a request to join room ' + room);
   console.log('This peer is the initiator of room ' + room + '!');
   isChannelReady = true;
+  if(isInitiator){
+	  socketArray.push(client);
+	  socket.emit('pass_clients', socketArray);
+  }
+});
+
+socket.on('pass_clients', function(inSocketArray){
+	socketArray = inSocketArray;
+	console.log('received other people from initiator');
+	
+	
+	var clientsCheck = io.sockets.adapter.rooms[room];
+	for (var socketId in clients){
+    	console.log(socketId);
+	}
+	console.log('1st loop');
+	for(var socketDum in socketArray){
+		if(socketDum.socketId){
+			console.log(socketDum.socketId);
+		}
+		console.log('2nd loop');
+	}
 });
 
 socket.on('joined', function(room) {
@@ -201,7 +251,12 @@ function handleIceCandidate(event) {
 
 function handleRemoteStreamAdded(event) {
   console.log('Remote stream added.');
-  if(numPeeps ===2 ){
+  
+  remoteVideoArray.push(event.stream);
+  setVideoDisplays();
+  
+  
+  /*if(numPeeps ===2 ){
 	  //remoteVideo2.src = window.URL.createObjectURL(event.stream);
 	  remoteVideo2.srcObject = event.stream;
   }else{
@@ -211,8 +266,8 @@ function handleRemoteStreamAdded(event) {
   }
   console.log(window.URL.createObjectURL(event.stream));
   console.log('Remote video source is: ' + remoteVideo.src);
-  
-  remoteStream = event.stream;
+  */
+  //remoteStream = event.stream;
    
 }
 
@@ -277,6 +332,10 @@ function requestTurn(turnURL) {
 
 function handleRemoteStreamRemoved(event) {
   console.log('Remote stream removed. Event: ', event);
+  remoteVideoArray.remove(remoteVideoArray.indexOf(event.stream));
+  console.log('removed from array');
+  setVideoDisplays();
+  
 }
 
 function hangup() {
