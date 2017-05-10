@@ -51,17 +51,18 @@ var socket = io.connect();
 ////////////////////////////////////////////////////////////////
 
 function setVideoDisplays(){
-	  
+	console.log("in set video displays");
 	var numVids = remoteVideoArray.length;
 	
 	if(numVids){
 		if(numVids === 1){
 			remoteVideo.src = remoteVideoArray[0];
+			console.log("numVids is 1 trying to set remotevideo 1")
 		}
 		else if(numVids ===2){
 			remoteVideo.src = remoteVideoArray[0];
 			remoteVideo2.src = remoteVideoArray[1];
-		}else{
+		}else if(numVids >=3){
 			remoteVideo.src = remoteVideoArray[vidArrayIndex+0];
 			remoteVideo2.src = remoteVideoArray[vidArrayIndex+1];
 			remoteVideo3.src = remoteVideoArray[vidArrayIndex+2];
@@ -69,7 +70,7 @@ function setVideoDisplays(){
 			
 	}
 	console.log("number of videos = "+ numVids);
-	remoteVideoArray.push(event.stream);
+	//remoteVideoArray.push(event.stream);
 	  
 	     
 }
@@ -254,7 +255,7 @@ function handleRemoteStreamAdded(event) {
   
   remoteVideoArray.push(event.stream);
   setVideoDisplays();
-  
+  remoteStream = event.stream;
   
   /*if(numPeeps ===2 ){
 	  //remoteVideo2.src = window.URL.createObjectURL(event.stream);
