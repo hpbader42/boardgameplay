@@ -35,46 +35,29 @@ io.sockets.on('connection', function(socket) {
   socket.on('create or join', function(room) {
     log('Received request to create or join room ' + room);
 
-    //var numClients = io.sockets.sockets.length;
-    
-    
     var clients = io.sockets.adapter.rooms[room];
-    var tryClients = io.of('/').in(room).clients;
-    log('clients is' + clients);
     
     var numClients = 1;
-    /*
-    if(clients){
-    	numClients = clients.length;
-    }
-    if(tryClients){
-    	numClients = tryClients.length;
-    }*/
     if(clients){
     	for (var socketId in clients){
-        	console.log(socketId);
+        	//console.log(socketId);
         	numClients = numClients + 1;
         }
         	
     }
     
-    log('tryClients: '+ tryClients + '  clients.length:' + clients);
-
     
     log('Room ' + room + ' now has ' + numClients + ' client(s)');
 
-    //socket.join(room);
-    //socket.emit('joined', room, socket.id);
-    //log('Client ID ' + socket.id + ' entered room ' + room);
     
     if (numClients === 1) {
       socket.join(room);
       log('Client ID ' + socket.id + ' created room ' + room);
       socket.emit('created', room, socket.id);
 
-    } else if (numClients === 2 || numClients ===3) {
+    } else if (numClients <= 3 ) {
       log('Client ID ' + socket.id + ' joined room ' + room);
-      io.sockets.in(room).emit('join', room);
+      io.sockets.in(room).emit('join', room, socket.id);
       socket.join(room);
       socket.emit('joined', room, socket.id);
       io.sockets.in(room).emit('ready');
