@@ -8,6 +8,7 @@ var socketIO = require('socket.io');
 
 var fileServer = new(nodeStatic.Server)();
 var port = (process.env.PORT || 5000);
+var maxClients = 8;
 
 var app = http.createServer(function(req, res) {
   fileServer.serve(req, res);
@@ -55,7 +56,7 @@ io.sockets.on('connection', function(socket) {
       log('Client ID ' + socket.id + ' created room ' + room);
       socket.emit('created', room, socket.id);
 
-    } else if (numClients === 2 || numClients ===3) {
+    } else if (numClients <= maxClients ) {
       log('Client ID ' + socket.id + ' joined room ' + room);
       io.sockets.in(room).emit('join', room, socket.id);
       socket.join(room);

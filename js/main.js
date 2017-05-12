@@ -32,6 +32,13 @@ var streamAray = new Array();
 var vidArrayIndex = 0;
 var numPeople = 0;
 
+var rBtn = document.getElementById('lButton');
+var lBtn = document.getElementById('rButton');
+var connectBtn = document.getElementById('connect');
+rBtn.addEventListener('click', shiftRight);
+lBtn.addEventListener('click', shiftLeft);
+connectBtn.addEventListener('click', setVideoDisplays);
+
 ///////////////////////////////////////////////////////
 
 // Set up audio and video regardless of what devices are present.
@@ -43,7 +50,6 @@ var sdpConstraints = {
 
 
 //////////////////////////////////////////////////////////
-
 //var room = 'foo';
 // Could prompt for room name:
 var room = prompt('Enter room name:');
@@ -80,26 +86,45 @@ maybeStart();
 
 ////////////////////////////////////////////////////////////////
 
+function shiftLeft(){
+	if (remoteVideoArray.length >= 4){
+		if(vidArrayIndex > 0){
+			vidArrayIndex+=-1;
+		}
+	}
+	setVideoDisplays();
+}
+
+function shiftRight(){
+	if (remoteVideoArray.length >= 4){
+		if(vidArrayIndex < remoteVideoArray.length-3){
+			vidArrayIndex+=1;
+		}
+	}
+	setVideoDisplays();
+}
+
 function setVideoDisplays(){
-	  
+	console.log("in set video displays");
 	var numVids = remoteVideoArray.length;
 	
 	if(numVids){
 		if(numVids === 1){
-			remoteVideo.src = remoteVideoArray[0];
+			remoteVideo.srcObject = remoteVideoArray[0];
+			console.log("numVids is 1 trying to set remotevideo 1")
 		}
 		else if(numVids ===2){
-			remoteVideo.src = remoteVideoArray[0];
-			remoteVideo2.src = remoteVideoArray[1];
-		}else{
-			remoteVideo.src = remoteVideoArray[vidArrayIndex+0];
-			remoteVideo2.src = remoteVideoArray[vidArrayIndex+1];
-			remoteVideo3.src = remoteVideoArray[vidArrayIndex+2];
+			remoteVideo.srcObject = remoteVideoArray[0];
+			remoteVideo2.srcObject = remoteVideoArray[1];
+		}else if(numVids >=3){
+			remoteVideo.srcObject = remoteVideoArray[vidArrayIndex+0];
+			remoteVideo2.srcObject = remoteVideoArray[vidArrayIndex+1];
+			remoteVideo3.srcObject = remoteVideoArray[vidArrayIndex+2];
 		}
 			
 	}
 	console.log("number of videos = "+ numVids);
-	remoteVideoArray.push(event.stream);
+	//remoteVideoArray.push(event.stream);
 	  
 	     
 }
@@ -127,6 +152,7 @@ socket.on('join', function (inRoom, client){
   if(isInitiator){
 	  socketArray.push(client);
 	  socket.to(room).emit('pass_clients', socketArray);
+	  console.log('sending pass_clients');
   }
 });
 
@@ -252,19 +278,18 @@ function handleRemoteStreamAdded(event) {
   
   remoteVideoArray.push(event.stream);
   setVideoDisplays();
-  
-  
-  /*if(numPeeps ===2 ){
-	  //remoteVideo2.src = window.URL.createObjectURL(event.stream);
-	  remoteVideo2.srcObject = event.stream;
-  }else{
-	  //remoteVideo.src = window.URL.createObjectURL(event.stream);	  
-	  remoteVideo.srcObject = event.stream;
-	  numPeeps =2;
-  }
-  console.log(window.URL.createObjectURL(event.stream));
+  remoteStream = event.stream;
+//  if(a ===2 ){
+//	  //remoteVideo2.src = window.URL.createObjectURL(event.stream);
+//	  remoteVideo2.srcObject = event.stream;
+//  }else{
+//	  //remoteVideo.src = window.URL.createObjectURL(event.stream);	
+//	  remoteVideo.srcObject = event.stream;
+//
+//	  console.log('Remote video source start is: '+ remoteVideo.src);
+//  }
   console.log('Remote video source is: ' + remoteVideo.src);
-  */
+  
   //remoteStream = event.stream;
    
 }
