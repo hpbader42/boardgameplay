@@ -40,6 +40,8 @@ var sdpConstraints = {
   offerToReceiveVideo: true
 };
 
+
+
 //////////////////////////////////////////////////////////
 
 //var room = 'foo';
@@ -47,6 +49,34 @@ var sdpConstraints = {
 var room = prompt('Enter room name:');
 
 var socket = io.connect();
+
+//Get User Media Stuff
+//////////////////////////////////////////////////////////////
+navigator.mediaDevices.getUserMedia({
+audio: true,
+video: true
+})
+.then(gotStream)
+.catch(function(e) {
+alert('getUserMedia() error: ' + e.name);
+});
+
+function gotStream(stream) {
+
+//called on initiation - after camera and mic are obtain
+console.log('Adding local stream.');
+localVideo.src = window.URL.createObjectURL(stream);
+//localVideo.srcObject = stream;
+localStream = stream;
+sendMessage('got user media');
+if (isInitiator) {
+maybeStart();
+}
+}
+
+
+///////////////////////////////////////////////////////////
+
 
 ////////////////////////////////////////////////////////////////
 
@@ -90,13 +120,13 @@ socket.on('full', function(room) {
   console.log('Room ' + room + ' is full');
 });
 
-socket.on('join', function (room, client){
+socket.on('join', function (inRoom, client){
   console.log('Another peer made a request to join room ' + room);
   console.log('This peer is the initiator of room ' + room + '!');
   isChannelReady = true;
   if(isInitiator){
 	  socketArray.push(client);
-	  socket.emit('pass_clients', socketArray);
+	  socket.to(room).emit('pass_clients', socketArray);
   }
 });
 
@@ -132,6 +162,7 @@ socket.on('log', function(array) {
 function sendMessage(message) {
   console.log('Client sending message: ', message);
   socket.emit('message', message);
+  //might want to emit only to room
 }
 
 // This client receives a message
@@ -148,7 +179,8 @@ socket.on('message', function(message) {
   } else if (message.type === 'answer' && isStarted) {
     pc.setRemoteDescription(new RTCSessionDescription(message));
   } else if (message.type === 'candidate' && isStarted) {
-    var candidate = new RTCIceCandidate({
+	  console.log('Received candidate');
+	  var candidate = new RTCIceCandidate({
       sdpMLineIndex: message.label,
       candidate: message.candidate
     });
@@ -158,37 +190,6 @@ socket.on('message', function(message) {
   }
 });
 
-
-
-
-
-navigator.mediaDevices.getUserMedia({
-  audio: true,
-  video: true
-})
-.then(gotStream)
-.catch(function(e) {
-  alert('getUserMedia() error: ' + e.name);
-});
-
-function gotStream(stream) {
-	
-	//called on initiation - after camera and mic are obtain
-  console.log('Adding local stream.');
-  localVideo.src = window.URL.createObjectURL(stream);
-  //localVideo.srcObject = stream;
-  localStream = stream;
-  sendMessage('got user media');
-  if (isInitiator) {
-    maybeStart();
-  }
-}
-
-var constraints = {
-  video: true
-};
-
-console.log('Getting user media with constraints', constraints);
 
 if (location.hostname !== 'localhost') {
   requestTurn(
@@ -213,10 +214,7 @@ function maybeStart() {
 
 }
 
-window.onbeforeunload = function() {
-  sendMessage('bye');
-  socket.close();
-};
+
 
 /////////////////////////////////////////////////////////
 
@@ -435,3 +433,9 @@ function removeCN(sdpLines, mLineIndex) {
   sdpLines[mLineIndex] = mLineElements.join(' ');
   return sdpLines;
 }
+
+
+window.onbeforeunload = function() {
+	  sendMessage('bye');
+	  socket.close();
+	};
