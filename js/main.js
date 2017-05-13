@@ -9,6 +9,7 @@ var localStream;
 var remoteStream;
 
 var pc;
+var pcArray = new Array();
 var turnReady;
 
 var pcConfig = {
@@ -26,10 +27,13 @@ var remoteVideo = document.querySelector('#remoteVideo');
 var remoteVideo2 = document.querySelector('#remoteVideo2');
 var remoteVideo3 = document.querySelector('#remoteVideo3');
 
-var remoteVideoArray = new Array();
+var streamArray = new Array();
 var socketArray = new Array();
+//might be able to remove socketArray
+
 var mySockNum = 0;
 var streamAray = new Array();
+var playerArray = new Array();
 var vidArrayIndex = 0;
 var numPeople = 0;
 
@@ -88,7 +92,7 @@ maybeStart();
 ////////////////////////////////////////////////////////////////
 
 function shiftLeft(){
-	if (remoteVideoArray.length >= 4){
+	if (streamArray.length >= 4){
 		if(vidArrayIndex > 0){
 			vidArrayIndex+=-1;
 		}
@@ -97,8 +101,8 @@ function shiftLeft(){
 }
 
 function shiftRight(){
-	if (remoteVideoArray.length >= 4){
-		if(vidArrayIndex < remoteVideoArray.length-3){
+	if (streamArray.length >= 4){
+		if(vidArrayIndex < streamArray.length-3){
 			vidArrayIndex+=1;
 		}
 	}
@@ -111,34 +115,35 @@ function setVideoDisplays(){
 	console.log("My socket id " + mySockNum);
 	
 	console.log("in set video displays");
-	var numVids = remoteVideoArray.length;
+	var numVids = streamArray.length;
 	
 	if(numVids){
 		if(numVids === 1){
-			remoteVideo.srcObject = remoteVideoArray[0];
+			remoteVideo.srcObject = streamArray[0];
 			console.log("numVids is 1 trying to set remotevideo 1")
 		}
 		else if(numVids ===2){
-			remoteVideo.srcObject = remoteVideoArray[0];
-			remoteVideo2.srcObject = remoteVideoArray[1];
+			remoteVideo.srcObject = streamArray[0];
+			remoteVideo2.srcObject = streamArray[1];
 		}else if(numVids >=3){
-			remoteVideo.srcObject = remoteVideoArray[vidArrayIndex+0];
-			remoteVideo2.srcObject = remoteVideoArray[vidArrayIndex+1];
-			remoteVideo3.srcObject = remoteVideoArray[vidArrayIndex+2];
+			remoteVideo.srcObject = streamArray[vidArrayIndex+0];
+			remoteVideo2.srcObject = streamArray[vidArrayIndex+1];
+			remoteVideo3.srcObject = streamArray[vidArrayIndex+2];
 		}
 			
 	}
 	console.log("number of videos = "+ numVids);
-	//remoteVideoArray.push(event.stream);
+	//streamArray.push(event.stream);
 	  
 	     
 }
-
+///////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 if (room !== '') {
   socket.emit('create or join', room);
   console.log('Attempted to create or  join room', room);
 }
-
+////////////////////////////////////////////////////////////////
 socket.on('created', function(room, client) {
   console.log('Created room ' + room);
   mySockNum = 1;
@@ -152,13 +157,12 @@ socket.on('full', function(room) {
 });
 
 socket.on('join', function (inRoom, clientNo){
-  console.log('Another peer made a request to join room ' + room);
-  mySockNum = clientNo;
+	if(isInitiator){
+		console.log('Another peer made a request to join room ' + room);	
+	}else{
+		  mySockNum = clientNo;		
+	}
   isChannelReady = true;
-  if(isInitiator){
-	  socketArray.push(client);
-	  console.log('sending pass_clients');
-  }
 
 });
 
@@ -168,8 +172,17 @@ socket.on('joined', function(room) {
   isChannelReady = true;
 });
 
+socket.on('test', function(myName){
+	console.log("Im testing" + myName);
+});
+
 socket.on('log', function(array) {
   console.log.apply(console, array);
+});
+
+socket.on('catch_up', function(inStreamArray, inPlayerArray){
+	streamArray = inStreamArray;
+	playerArray = inPlayerArray;
 });
 
 ////////////////////////////////////////////////
@@ -180,7 +193,32 @@ function sendMessage(message) {
   //might want to emit only to room
 }
 
-// This client receives a message
+
+
+if (location.hostname !== 'localhost') {
+  requestTurn(
+    'https://computeengineondemand.appspot.com/turn?username=41784574&key=4080218913'
+  );
+}
+
+function maybeStart() {
+  console.log('>>>>>>> maybeStart() ', isStarted, localStream, isChannelReady);
+  //if (!isStarted && typeof localStream !== 'undefined' && isChannelReady) {
+  if ( (!isStarted || isInitiator) &&typeof localStream !== 'undefined' && isChannelReady) {
+	console.log('>>>>>> creating peer connection');
+    //RTCPeer start
+	createPeerConnection();
+    pc.addStream(localStream);
+    isStarted = true;
+    console.log('isInitiator', isInitiator);
+    if (isInitiator) {
+      doCall();
+    }
+  }
+
+}
+
+//This client receives a message
 socket.on('message', function(message) {
   console.log('Client received message:', message);
   if (message === 'got user media') {
@@ -189,9 +227,16 @@ socket.on('message', function(message) {
 	 console.log("offer made");
     if (!isInitiator && !isStarted) {
       maybeStart();
+      pc.setRemoteDescription(new RTCSessionDescription(message));
+      doAnswer();
     }
-    pc.setRemoteDescription(new RTCSessionDescription(message));
-    doAnswer();
+    if(isInitiator){
+    	pc.setRemoteDescription(new RTCSessionDescription(message));
+    	doAnswer();
+    }
+//    pc.setRemoteDescription(new RTCSessionDescription(message));
+ //   doAnswer();
+
   } else if (message.type === 'answer' && isStarted) {
     pc.setRemoteDescription(new RTCSessionDescription(message));
   } else if (message.type === 'candidate' && isStarted) {
@@ -207,34 +252,11 @@ socket.on('message', function(message) {
 });
 
 
-if (location.hostname !== 'localhost') {
-  requestTurn(
-    'https://computeengineondemand.appspot.com/turn?username=41784574&key=4080218913'
-  );
-}
-
-function maybeStart() {
-  console.log('>>>>>>> maybeStart() ', isStarted, localStream, isChannelReady);
-  //if (!isStarted && typeof localStream !== 'undefined' && isChannelReady) {
-  if ( typeof localStream !== 'undefined' && isChannelReady) {
-	console.log('>>>>>> creating peer connection');
-    createPeerConnection();
-    pc.addStream(localStream);
-    isStarted = true;
-    console.log('isInitiator', isInitiator);
-    if (isInitiator) {
-      doCall();
-    }
-  }
-
-}
-
-
-
 /////////////////////////////////////////////////////////
 
 function createPeerConnection() {
   try {
+	console.log('<<<<<< in createPeerConnection')
     pc = new RTCPeerConnection(null);
     
     pc.onicecandidate = handleIceCandidate;
@@ -259,13 +281,15 @@ function handleIceCandidate(event) {
     });
   } else {
     console.log('End of candidates.');
+    var pcPush = pc;
+    pcArray.push(pcPush);
   }
 }
 
 function handleRemoteStreamAdded(event) {
   console.log('Remote stream added.');
   
-  remoteVideoArray.push(event.stream);
+  streamArray.push(event.stream);
   setVideoDisplays();
   remoteStream = event.stream;
 //  if(a ===2 ){
@@ -344,7 +368,7 @@ function requestTurn(turnURL) {
 
 function handleRemoteStreamRemoved(event) {
   console.log('Remote stream removed. Event: ', event);
-  remoteVideoArray.remove(remoteVideoArray.indexOf(event.stream));
+  delete streamArray[streamArray.indexOf(event.stream)];
   console.log('removed from array');
   setVideoDisplays();
   

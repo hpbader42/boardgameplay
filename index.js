@@ -9,12 +9,16 @@ var socketIO = require('socket.io');
 var fileServer = new(nodeStatic.Server)();
 var port = (process.env.PORT || 5000);
 var maxClients = 8;
+var roomArray = new Array();
 
 var app = http.createServer(function(req, res) {
   fileServer.serve(req, res);
 }).listen(port);
 
-
+function aRoom(name, clients){
+    this.name = name; 
+    this.clients  = new Array(clients);
+ }
 
 
 var io = socketIO.listen(app);
@@ -53,18 +57,33 @@ io.sockets.on('connection', function(socket) {
     
     if (numClients === 1) {
       socket.join(room);
+      var myRoom = new aRoom(room, socket);
+      roomArray.push(myRoom);
       log('Client ID ' + socket.id + ' created room ' + room);
       socket.emit('created', room, numClients);
 
     } else if (numClients <= maxClients ) {
       log('Client ID ' + socket.id + ' joined room ' + room);
+      var roomNames = new Array();
+      roomArray.forEach(function(entry){
+    	  roomNames.push(entry.name);
+      });
+      roomArray[roomNames.indexOf(room)].clients.push(socket);
+      socketCount = 0;
+      roomArray[roomNames.indexOf(room)].clients.forEach(function(aClient){
+    	 //console.log(aClient); 
+    	 //doStuff
+    	 aClient.emit('test', aClient.id);
+    	 socketCount = socketCount + 1;
+      });
+      console.log("socket count is: "+ socketCount);
       io.sockets.in(room).emit('join', room, numClients);
       //replace with either database knowing which client is which number
       //or on client close, reshuffle everybody's data - preferably 1st option
       socket.join(room);
       socket.emit('joined', room, socket.id);
       io.sockets.in(room).emit('ready');
-    } else { // max three clients
+    } else { // max clients
       socket.emit('full', room);
     }
     
@@ -82,6 +101,9 @@ io.sockets.on('connection', function(socket) {
     }
   });
   
+  socket.on('update', function(room, thisSocket, socketIdArray){
+	  
+  });
   
   socket.on('bye', function(){
     console.log('received bye');
