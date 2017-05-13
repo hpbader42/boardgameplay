@@ -54,11 +54,13 @@ io.sockets.on('connection', function(socket) {
     if (numClients === 1) {
       socket.join(room);
       log('Client ID ' + socket.id + ' created room ' + room);
-      socket.emit('created', room, socket.id);
+      socket.emit('created', room, numClients);
 
     } else if (numClients <= maxClients ) {
       log('Client ID ' + socket.id + ' joined room ' + room);
-      io.sockets.in(room).emit('join', room, socket.id);
+      io.sockets.in(room).emit('join', room, numClients);
+      //replace with either database knowing which client is which number
+      //or on client close, reshuffle everybody's data - preferably 1st option
       socket.join(room);
       socket.emit('joined', room, socket.id);
       io.sockets.in(room).emit('ready');
@@ -79,7 +81,7 @@ io.sockets.on('connection', function(socket) {
       });
     }
   });
-
+  
   
   socket.on('bye', function(){
     console.log('received bye');

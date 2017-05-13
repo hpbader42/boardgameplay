@@ -28,6 +28,7 @@ var remoteVideo3 = document.querySelector('#remoteVideo3');
 
 var remoteVideoArray = new Array();
 var socketArray = new Array();
+var mySockNum = 0;
 var streamAray = new Array();
 var vidArrayIndex = 0;
 var numPeople = 0;
@@ -105,6 +106,10 @@ function shiftRight(){
 }
 
 function setVideoDisplays(){
+	console.log(">>>>>")
+	console.log("Is initiator" + isInitiator);
+	console.log("My socket id " + mySockNum);
+	
 	console.log("in set video displays");
 	var numVids = remoteVideoArray.length;
 	
@@ -136,6 +141,7 @@ if (room !== '') {
 
 socket.on('created', function(room, client) {
   console.log('Created room ' + room);
+  mySockNum = 1;
   socketArray.push(client);
   isInitiator = true;
   
@@ -145,34 +151,17 @@ socket.on('full', function(room) {
   console.log('Room ' + room + ' is full');
 });
 
-socket.on('join', function (inRoom, client){
+socket.on('join', function (inRoom, clientNo){
   console.log('Another peer made a request to join room ' + room);
-  console.log('This peer is the initiator of room ' + room + '!');
+  mySockNum = clientNo;
   isChannelReady = true;
   if(isInitiator){
 	  socketArray.push(client);
-	  socket.to(room).emit('pass_clients', socketArray);
 	  console.log('sending pass_clients');
   }
+
 });
 
-socket.on('pass_clients', function(inSocketArray){
-	socketArray = inSocketArray;
-	console.log('received other people from initiator');
-	
-	
-	var clientsCheck = io.sockets.adapter.rooms[room];
-	for (var socketId in clients){
-    	console.log(socketId);
-	}
-	console.log('1st loop');
-	for(var socketDum in socketArray){
-		if(socketDum.socketId){
-			console.log(socketDum.socketId);
-		}
-		console.log('2nd loop');
-	}
-});
 
 socket.on('joined', function(room) {
   console.log('joined: ' + room);
@@ -197,6 +186,7 @@ socket.on('message', function(message) {
   if (message === 'got user media') {
     maybeStart();
   } else if (message.type === 'offer') {
+	 console.log("offer made");
     if (!isInitiator && !isStarted) {
       maybeStart();
     }
@@ -236,7 +226,6 @@ function maybeStart() {
       doCall();
     }
   }
-  console.log("testing3");
 
 }
 
