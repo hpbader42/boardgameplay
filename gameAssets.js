@@ -172,3 +172,58 @@ currentPlayer ++;
 // perhaps we could create some sort of data structure that defines the relationships 
 //between each area--like an edge graph
 
+
+
+
+//Implementing @Hayden's Idea
+
+//Map for each card with image attached:
+
+var deck = {
+	Card1: "CA.png",
+	Card2: "C2.png",
+	...,
+	Card52: "SK.png"
+}
+
+//Add a card to the deck:
+
+deck[Card53] = "bigJoker";
+
+//Remove a card from the deck:
+
+deck[Card53] = "";
+
+/*Add card to hand from deck (after doing shuffle method).  
+All areas of cards (ex. deck, hand, inplay, discard pile) are maps.
+This way, card assets are treated as reusable and can more freely
+from on area to another
+shuffle(deck);*/
+
+var hand = [];
+hand[card[0]] = deck[0];
+
+//remove card that was drawn from deck
+deck[0] = "";
+
+//move card from hand to in play area
+var inPlay = [];
+indPlay[card[0]] = hand[0];
+hand[0] = "";
+
+//move card from in play area to graveyard
+var discard = [];
+discard[card[0]] = inPlay[0];
+inPlay[0] = "";
+
+//extra features --optional for now
+
+//roll a dice
+function rollDice(diceSides) {
+	return randWholeInt(1, diceSides);
+	alert(diceSides);
+}
+
+
+
+
