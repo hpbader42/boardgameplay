@@ -15,6 +15,8 @@ var turnReady;
 //renegotiation variables
 var renegotiate = false;
 var send_to_id = -1;
+var renegotiateID = 0;
+var renegotiateLoop = false;
 
 var pcConfig = {
   'iceServers': [{
@@ -97,26 +99,26 @@ maybeStart();
 
 function debug(){
 
-	if(isInitiator){
-		pcArray.forEach(function(indivPC) {
-			var streamArrayCopy = streamArray;
-			if(indivPC){
-
-				streamArrayCopy.forEach(function(streamCopy){
-					var addThisStream = true;
-					indivPC.getRemoteStreams().forEach(function(remoteStream){
-						if(remoteStream.id === streamCopy.id){
-							addThisStream = false;
-						}						
-					});
-					if(addThisStream){
-						console.log('adding stream');
-						indivPC.addStream(streamCopy);
-					}
-				});
-			}
-	      });	
-	}
+//	if(isInitiator){
+//		pcArray.forEach(function(indivPC) {
+//			var streamArrayCopy = streamArray;
+//			if(indivPC){
+//
+//				streamArrayCopy.forEach(function(streamCopy){
+//					var addThisStream = true;
+//					indivPC.getRemoteStreams().forEach(function(remoteStream){
+//						if(remoteStream.id === streamCopy.id){
+//							addThisStream = false;
+//						}						
+//					});
+//					if(addThisStream){
+//						console.log('adding stream');
+//						indivPC.addStream(streamCopy);
+//					}
+//				});
+//			}
+//	      });	
+//	}
     if(isInitiator){
     	//socket.emit('update', room, streamArray);
     }
@@ -209,7 +211,9 @@ socket.on('full', function(room) {
 socket.on('join', function (inRoom, clientNo){
 	if(room ===inRoom){
 		if(isInitiator){
-			console.log('Another peer made a request to join room ' + room);	
+			console.log('Another peer made a request to join room ' + room);
+			renegotiateID = 0;
+			renegotiateLoop = false;
 		}else{
 			if(mySockNum ===0){
 				mySockNum = clientNo;
@@ -315,7 +319,7 @@ socket.on('message', function(message, to_id) {
     }
     if(isStarted){
     	if(to_id === mySockNum){
-    		console.log('should be about to reinitiate');
+    		console.log('offer to reinitiate made to me');
     		pc.setRemoteDescription(new RTCSessionDescription(message));
     		doAnswer();
     		console.log('should have answered request to reinitiate');
@@ -341,6 +345,27 @@ socket.on('message', function(message, to_id) {
 		console.log("handled answer");
 		
 		
+		if(renegotiateLoop){
+	    	var count = streamArray.length;
+	    	console.log('The stream array is ' + count + ' long');
+	    	//for 2 streams, we go to ids 2 & 3
+	    	if( count > 1){
+	    		if(renegotiateID === 0){
+	    			renegotiateID = 2;
+	    		}
+	    		
+	    		if(renegotiateID <= count+1){
+	    			renegotiateID = renegotiateID + 1;
+	    	  		console.log('renegotiating ' + renegotiateID-1);
+	    			renegotiatePeerConnection(renegotiateID-1);
+	    		}else{
+	    			renegotiateID = 0;
+	    			renegotiateLoop = false;
+	    		}
+	    		
+	    	}
+			
+		}
 		//add to connection array
 		
 		//on an answer reconnect all sessions if required
@@ -398,6 +423,7 @@ function createPeerConnection() {
 function renegotiatePeerConnection(to_id){
 	try{
 		console.log('****** in adjustPeerConnection');
+		var backupPC = pc;
 		pc = pcArray[to_id-2];
 		console.log("peer connection being changed");
 		console.log(pcArray);
@@ -406,32 +432,27 @@ function renegotiatePeerConnection(to_id){
 		
 		send_to_id = to_id;
 		
-		pcArray.forEach(function(indivPC) {
-			var streamArrayCopy = streamArray;
-			if(indivPC){
-
-				streamArrayCopy.forEach(function(streamCopy){
-					var addThisStream = true;
-					indivPC.getLocalStreams().forEach(function(localStream){
-//					indivPC.getRemoteStreams().forEach(function(remoteStream){
-						var remStream = indivPC.getRemoteStreams()[0];
-						console.log(remStream);
-						if(localStream.id === streamCopy.id || streamCopy.id === remStream.id){
-							addThisStream = false;
-						}						
-					});
-					if(addThisStream){
-						console.log('adding stream');
-						indivPC.addStream(streamCopy);
-					}
-				});
+	    var streamArrayCopy = streamArray;
+		streamArrayCopy.forEach(function(streamCopy){
+		var addThisStream = true;
+		
+			pc.getLocalStreams().forEach(function(localStream){
+	//		indivPC.getRemoteStreams().forEach(function(remoteStream){
+				var remStream = pc.getRemoteStreams()[0];
+				console.log(remStream);
+				if(localStream.id === streamCopy.id || streamCopy.id === remStream.id){
+					addThisStream = false;
+				}						
+			});
+			if(addThisStream){
+				console.log('adding stream');
+				pc.addStream(streamCopy);
 			}
-			//console.log(indivPC.id);
-			console.log('indiv PC ---')
-			console.log(indivPC.getRemoteStreams());
-			console.log(indivPC.getLocalStreams());
-	      });
-	      
+			//later update to remove if strream is gones
+		});
+
+		
+		
 	      renegotiate = true;
 	      console.log('normal PC ---')
 	      console.log('creating offer');
@@ -439,7 +460,8 @@ function renegotiatePeerConnection(to_id){
 	      console.log(pc.getRemoteStreams());
 	      console.log(pc.getLocalStreams());
 	      pc.createOffer(setLocalAndSendMessage, handleCreateOfferError);
-	      
+	      console.log('about to reset pc');
+	      //pc = backupPC;
 	      
 	}  catch (e) {
 	    console.log('Failed to renegotiate PeerConnection, exception: ' + e.message);
@@ -465,8 +487,33 @@ function handleIceCandidate(event) {
     var pcPush = pc;
     pcArray.push(pcPush);
     
-    //
     
+    if(isInitiator){
+    	//update clients 2 & 3 if we have 3 streams
+    	//later make sure we have the right streams
+    	//make sure most recent pc is correct
+    	
+    	var count = streamArray.length;
+    	console.log('The stream array is ' + count + ' long');
+    	//for 2 streams, we go to ids 2 & 3
+    	if( count > 1){
+    		renegotiateLoop = true;
+    		if(renegotiateID === 0){
+    			renegotiateID = 2;
+    		}
+    		
+    		if(renegotiateID <= count+1){
+    			renegotiateID = renegotiateID + 1;
+    	  		console.log('renegotiating ' + renegotiateID-1);
+    			renegotiatePeerConnection(renegotiateID-1);
+    		}else{
+    			renegotiateID = 0;
+    		}
+    		
+    	}
+    }
+
+
     //
 
   }
@@ -483,25 +530,29 @@ function handleRemoteStreamAdded(event) {
   console.log(event);
   
 
+  console.log('streamArrayLength before push' + streamArray.length);
   streamArray.push(event.stream);
-  if(isInitiator){
-	//update clients 2 & 3 if we have 3 streams
-	//later make sure we have the right streams
-	var count = streamArray.length;
-	console.log('The stream array is ' + count + ' long');
-	for (var i =2; i<=count; i=i+1){
-		console.log('renegotiating ' + i);
-		renegotiatePeerConnection(i);
-
-	}
-}
+  console.log('streamArrayLength after push' + streamArray.length);
+//  if(isInitiator){
+//	//update clients 2 & 3 if we have 3 streams
+//	//later make sure we have the right streams
+//	//make sure most recent pc is correct
+//	  
+//	var count = streamArray.length;
+//	console.log('The stream array is ' + count + ' long');
+//	for (var i =2; i<=count; i=i+1){
+//		console.log('renegotiating ' + i);
+//		renegotiatePeerConnection(i);
+//
+//	}
   
   setVideoDisplays();
   remoteStream = event.stream;
   console.log('Remote video source is: ' + remoteVideo.src);
   
   //remoteStream = event.stream;
-   
+  //
+  
 }
 
 function handleCreateOfferError(event) {
