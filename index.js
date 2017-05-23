@@ -28,13 +28,15 @@ io.sockets.on('connection', function(socket) {
   function log() {
     var array = ['Message from server:'];
     array.push.apply(array, arguments);
-    socket.emit('log', array);
+    //get rid of server messages
+    //socket.emit('log', array);
   }
 
-  socket.on('message', function(message) {
+  socket.on('message', function(message, room, from_id, to_id) {
     log('Client said: ', message);
     // for a real app, would be room-only (not broadcast)
-    socket.broadcast.emit('message', message);
+    socket.broadcast.to(room).emit('message', message, to_id);
+   
   });
 
   socket.on('create or join', function(room) {
@@ -43,14 +45,15 @@ io.sockets.on('connection', function(socket) {
     var clients = io.sockets.adapter.rooms[room];
     
     var numClients = 1;
-    if(clients){
-    	for (var socketId in clients){
-        	//console.log(socketId);
-        	numClients = numClients + 1;
-        }
-        	
+    var roomNames = new Array();
+    roomArray.forEach(function(entry){
+  	  roomNames.push(entry.name);
+    });
+    if(roomNames.indexOf(room) >= 0){ 	
+    	roomArray[roomNames.indexOf(room)].clients.forEach(function(aClient){
+    	  	 numClients = numClients + 1;
+    	});	
     }
-    
     
     log('Room ' + room + ' now has ' + numClients + ' client(s)');
 
@@ -64,10 +67,10 @@ io.sockets.on('connection', function(socket) {
 
     } else if (numClients <= maxClients ) {
       log('Client ID ' + socket.id + ' joined room ' + room);
-      var roomNames = new Array();
-      roomArray.forEach(function(entry){
-    	  roomNames.push(entry.name);
-      });
+//      var roomNames = new Array();
+//      roomArray.forEach(function(entry){
+//    	  roomNames.push(entry.name);
+//      });
       roomArray[roomNames.indexOf(room)].clients.push(socket);
       socketCount = 0;
       roomArray[roomNames.indexOf(room)].clients.forEach(function(aClient){
@@ -77,7 +80,7 @@ io.sockets.on('connection', function(socket) {
     	 socketCount = socketCount + 1;
       });
       console.log("socket count is: "+ socketCount);
-      io.sockets.in(room).emit('join', room, numClients);
+      io.sockets.emit('join', room, numClients);
       //replace with either database knowing which client is which number
       //or on client close, reshuffle everybody's data - preferably 1st option
       socket.join(room);
@@ -101,8 +104,14 @@ io.sockets.on('connection', function(socket) {
     }
   });
   
-  socket.on('update', function(room, thisSocket, socketIdArray){
-	  
+  socket.on('update', function(room, streamArray, thisSocket, socketIdArray){
+	  console.log("logging stream array");
+		streamArray.forEach(function(stream){
+			console.log("*****************")
+			console.log(stream);
+		});
+	  console.log(streamArray);
+	  io.sockets.in(room).emit('catch_up', streamArray);
   });
   
   socket.on('bye', function(){
