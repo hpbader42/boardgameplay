@@ -1,3 +1,5 @@
+/*For Google Dev Editor
+at https://github.com/GoogleChrome/chromedeveditor/blob/master/doc/GettingStarted.md*/
 var element = document.querySelector("#greeting");
 element.innerText = "Hello, world!";
 
