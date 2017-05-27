@@ -484,34 +484,34 @@ function handleIceCandidate(event) {
     );
   } else {
     console.log('End of candidates.');
-    var pcPush = pc;
-    pcArray.push(pcPush);
+//    var pcPush = pc;
+//    pcArray.push(pcPush);
     
     
-    if(isInitiator){
-    	//update clients 2 & 3 if we have 3 streams
-    	//later make sure we have the right streams
-    	//make sure most recent pc is correct
-    	
-    	var count = streamArray.length;
-    	console.log('The stream array is ' + count + ' long');
-    	//for 2 streams, we go to ids 2 & 3
-    	if( count > 1){
-    		renegotiateLoop = true;
-    		if(renegotiateID === 0){
-    			renegotiateID = 2;
-    		}
-    		
-    		if(renegotiateID <= count+1){
-    			renegotiateID = renegotiateID + 1;
-    	  		console.log('renegotiating ' + renegotiateID-1);
-    			renegotiatePeerConnection(renegotiateID-1);
-    		}else{
-    			renegotiateID = 0;
-    		}
-    		
-    	}
-    }
+//    if(isInitiator){
+//    	//update clients 2 & 3 if we have 3 streams
+//    	//later make sure we have the right streams
+//    	//make sure most recent pc is correct
+//    	
+//    	var count = streamArray.length;
+//    	console.log('The stream array is ' + count + ' long');
+//    	//for 2 streams, we go to ids 2 & 3
+//    	if( count > 1){
+//    		renegotiateLoop = true;
+//    		if(renegotiateID === 0){
+//    			renegotiateID = 2;
+//    		}
+//    		
+//    		if(renegotiateID <= count+1){
+//    			renegotiateID = renegotiateID + 1;
+//    	  		console.log('renegotiating ' + renegotiateID-1);
+//    			renegotiatePeerConnection(renegotiateID-1);
+//    		}else{
+//    			renegotiateID = 0;
+//    		}
+//    		
+//    	}
+//    }
 
 
     //
@@ -533,26 +533,39 @@ function handleRemoteStreamAdded(event) {
   console.log('streamArrayLength before push' + streamArray.length);
   streamArray.push(event.stream);
   console.log('streamArrayLength after push' + streamArray.length);
-//  if(isInitiator){
-//	//update clients 2 & 3 if we have 3 streams
-//	//later make sure we have the right streams
-//	//make sure most recent pc is correct
-//	  
-//	var count = streamArray.length;
-//	console.log('The stream array is ' + count + ' long');
-//	for (var i =2; i<=count; i=i+1){
-//		console.log('renegotiating ' + i);
-//		renegotiatePeerConnection(i);
-//
-//	}
-  
+
   setVideoDisplays();
   remoteStream = event.stream;
   console.log('Remote video source is: ' + remoteVideo.src);
-  
-  //remoteStream = event.stream;
-  //
-  
+  console.log("I am initiator " + isInitiator);    
+  if(isInitiator){
+
+	  var pcPush = pc;
+	  pcArray.push(pcPush);
+  	//update clients 2 & 3 if we have 3 streams
+  	//later make sure we have the right streams
+  	//make sure most recent pc is correct
+  	
+  	var count = streamArray.length;
+  	console.log('The stream array is ' + count + ' long');
+  	//for 2 streams, we go to ids 2 & 3
+  	if( count > 1){
+  		renegotiateLoop = true;
+  		if(renegotiateID === 0){
+  			renegotiateID = 2;
+  		}
+  		
+  		if(renegotiateID <= count+1){
+  			renegotiateID = renegotiateID + 1;
+  	  		console.log('renegotiating ' + renegotiateID-1);
+  			renegotiatePeerConnection(renegotiateID-1);
+  		}else{
+  			renegotiateID = 0;
+  		}
+  		
+  	}
+  }
+    
 }
 
 function handleCreateOfferError(event) {
@@ -730,6 +743,7 @@ function removeCN(sdpLines, mLineIndex) {
 
 
 window.onbeforeunload = function() {
-	  sendMessage('bye');
-	  socket.close();
+	  //sendMessage('bye', room);
+	  	socket.emit('bye', room);
+		socket.close();
 	};
