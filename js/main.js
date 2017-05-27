@@ -21,7 +21,7 @@ var renegotiateLoop = false;
 var pcConfig = {
   'iceServers': [{
     'urls': 'stun:stun.l.google.com:19302'
-  }
+  },
   {
 	  'urls': 'turn:user@34.208.73.154:3478',
 	  'credential': 'iamnotsureifthiscanpossiblywork'
