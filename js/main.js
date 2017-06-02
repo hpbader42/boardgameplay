@@ -177,16 +177,24 @@ function setVideoDisplays(){
 	
 	if(numVids){
 		if(numVids === 1){
-			remoteVideo.srcObject = streamArray[0];
+			//remoteVideo.srcObject = streamArray[0];
+			remoteVideo.src = window.URL.createObjectURL(streamArray[0]);
 			console.log("numVids is 1 trying to set remotevideo 1")
 		}
 		else if(numVids ===2){
-			remoteVideo.srcObject = streamArray[0];
-			remoteVideo2.srcObject = streamArray[1];
+			//remoteVideo.srcObject = streamArray[0];
+			//remoteVideo2.srcObject = streamArray[1];
+			remoteVideo.src = window.URL.createObjectURL(streamArray[0]);
+			remoteVideo2.src = window.URL.createObjectURL(streamArray[1]);
+			
 		}else if(numVids >=3){
-			remoteVideo.srcObject = streamArray[vidArrayIndex+0];
-			remoteVideo2.srcObject = streamArray[vidArrayIndex+1];
-			remoteVideo3.srcObject = streamArray[vidArrayIndex+2];
+			//remoteVideo.srcObject = streamArray[vidArrayIndex+0];
+			//remoteVideo2.srcObject = streamArray[vidArrayIndex+1];
+			//remoteVideo3.srcObject = streamArray[vidArrayIndex+2];
+			remoteVideo.src = window.URL.createObjectURL(streamArray[vidArrayIndex+0]);
+			remoteVideo2.src = window.URL.createObjectURL(streamArray[vidArrayIndex+1]);
+			remoteVideo3.src = window.URL.createObjectURL(streamArray[vidArrayIndex+2]);
+			
 		}
 			
 	}
