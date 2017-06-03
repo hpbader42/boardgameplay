@@ -333,9 +333,7 @@ socket.on('message', function(message, to_id) {
     if(isStarted){
     	if(to_id === mySockNum){
     		console.log('offer to reinitiate made to me');
-    		pc.setRemoteDescription(new RTCSessionDescription(message)).then(function() {
-        		doAnswer();    			
-    		});
+    		pc.setRemoteDescription(new RTCSessionDescription(message)).then(doAnswer);
     		console.log('should have answered request to reinitiate');
     	}
     }
