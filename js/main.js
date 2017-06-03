@@ -357,7 +357,6 @@ socket.on('message', function(message, to_id) {
 		pc.setRemoteDescription(new RTCSessionDescription(message));
 		console.log("handled answer");
 		
-		
 		if(renegotiateLoop){
 	    	var count = streamArray.length;
 	    	console.log('The stream array is ' + count + ' long');
@@ -373,6 +372,7 @@ socket.on('message', function(message, to_id) {
 	    			renegotiatePeerConnection(renegotiateID-1);
 	    		}else{
 	    			renegotiateID = 0;
+	    			console.log('done renegotiating');
 	    			renegotiateLoop = false;
 	    		}
 	    		
@@ -391,7 +391,9 @@ socket.on('message', function(message, to_id) {
     });
     pc.addIceCandidate(candidate);
   } 
-//  else if (message === 'renegotiate' && isStarted && to_id === mySockNum){
+  
+  
+  //  else if (message === 'renegotiate' && isStarted && to_id === mySockNum){
 //	  //if a message to renegotiate is sent, I am started, and I am specified by id
 //	  
 //	  
@@ -501,35 +503,9 @@ function handleIceCandidate(event) {
 //    pcArray.push(pcPush);
     
     
-//    if(isInitiator){
-//    	//update clients 2 & 3 if we have 3 streams
-//    	//later make sure we have the right streams
-//    	//make sure most recent pc is correct
-//    	
-//    	var count = streamArray.length;
-//    	console.log('The stream array is ' + count + ' long');
-//    	//for 2 streams, we go to ids 2 & 3
-//    	if( count > 1){
-//    		renegotiateLoop = true;
-//    		if(renegotiateID === 0){
-//    			renegotiateID = 2;
-//    		}
-//    		
-//    		if(renegotiateID <= count+1){
-//    			renegotiateID = renegotiateID + 1;
-//    	  		console.log('renegotiating ' + renegotiateID-1);
-//    			renegotiatePeerConnection(renegotiateID-1);
-//    		}else{
-//    			renegotiateID = 0;
-//    		}
-//    		
-//    	}
-//    }
+ 
+    }
 
-
-    //
-
-  }
 }
 
 function handleRenegotiation(event){
@@ -553,15 +529,16 @@ function handleRemoteStreamAdded(event) {
   console.log("I am initiator " + isInitiator);    
   if(isInitiator){
 
-	  var pcPush = pc;
-	  pcArray.push(pcPush);
+	var pcPush = pc;
+	pcArray.push(pcPush);
   	//update clients 2 & 3 if we have 3 streams
   	//later make sure we have the right streams
   	//make sure most recent pc is correct
   	
   	var count = streamArray.length;
   	console.log('The stream array is ' + count + ' long');
-  	//for 2 streams, we go to ids 2 & 3
+  	
+//    for 2 streams, we go to ids 2 & 3
   	if( count > 1){
   		renegotiateLoop = true;
   		if(renegotiateID === 0){
@@ -615,7 +592,7 @@ function setLocalAndSendMessage(sessionDescription) {
 }
 
 function onCreateSessionDescriptionError(error) {
-  trace('Failed to create session description: ' + error.toString());
+  console.trace('Failed to create session description: ' + error.toString());
 }
 
 function requestTurn(turnURL) {
