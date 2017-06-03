@@ -23,8 +23,9 @@ var pcConfig = {
     'urls': 'stun:stun.l.google.com:19302'
   },
   {
-	  'urls': 'turn:testuser@34.208.167.80:3478',
-	  'credential': 'ireallyhopethatthiscanwork'
+	  'urls': 'turn:testuser@34.211.62.124:3478',
+  	  'credential': 'ireallyhopethatthiscanwork'
+	  
   }
   ]
 };
