@@ -550,7 +550,9 @@ function handleRemoteStreamAdded(event) {
   	  		console.log('renegotiating ' + renegotiateID-1);
   			renegotiatePeerConnection(renegotiateID-1);
   		}else{
+  			console.log('done renegotiating');
   			renegotiateID = 0;
+  			renegotiateLoop = false;
   		}
   		
   	}
