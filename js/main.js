@@ -552,7 +552,6 @@ function handleRemoteStreamAdded(event) {
   		}else{
   			console.log('done renegotiating');
   			renegotiateID = 0;
-  			renegotiateLoop = false;
   		}
   		
   	}
@@ -580,7 +579,10 @@ function doAnswer() {
 function setLocalAndSendMessage(sessionDescription) {
   // Set Opus as the preferred codec in SDP if Opus is present.
   
+  console.log('printing session Description');
+  console.log(sessionDescription);
   sessionDescription.sdp = preferOpus(sessionDescription.sdp);
+  console.log('about to set local description');
   pc.setLocalDescription(sessionDescription);
   console.log('setLocalAndSendMessage sending message', sessionDescription);
   if(renegotiate && send_to_id > -1){
@@ -594,7 +596,8 @@ function setLocalAndSendMessage(sessionDescription) {
 }
 
 function onCreateSessionDescriptionError(error) {
-  console.trace('Failed to create session description: ' + error.toString());
+  console.log('Failed to create session description: ' + error.toString());
+  console.log('On create sessionDescription error');
 }
 
 function requestTurn(turnURL) {
