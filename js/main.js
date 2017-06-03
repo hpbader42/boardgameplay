@@ -333,8 +333,9 @@ socket.on('message', function(message, to_id) {
     if(isStarted){
     	if(to_id === mySockNum){
     		console.log('offer to reinitiate made to me');
-    		pc.setRemoteDescription(new RTCSessionDescription(message));
-    		doAnswer();
+    		pc.setRemoteDescription(new RTCSessionDescription(message)).then(function() {
+        		doAnswer();    			
+    		});
     		console.log('should have answered request to reinitiate');
     	}
     }
@@ -567,6 +568,7 @@ function doCall() {
   console.log('Sending offer to peer');
   pc.createOffer(setLocalAndSendMessage, handleCreateOfferError);
 }
+
 
 function doAnswer() {
   console.log('Sending answer to peer.');
