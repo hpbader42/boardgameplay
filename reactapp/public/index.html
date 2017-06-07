@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>vTable - Games without Borders</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+  <!-- /* copied over from node version*/ -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/lib/adapter.js"></script>
+  <script src="/js/main.js"></script>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="https://unpkg.com/react@15.3.2/dist/react.js"></script>
+  <script src="https://unpkg.com/react-dom@15.3.2/dist/react-dom.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
+  <script src="https://npmcdn.com/react-router@3.0.2/umd/ReactRouter.min.js"></script>
+  <style>
+    body {
+      background-color: #FFCC00;
+      padding: 20px;
+      margin: 0;
+    }
+    h1, h2, p, ul, li {
+      font-family: Helvetica, Arial, sans-serif;
+    }
+    ul.header li {
+      display: inline;
+      list-style-type: none;
+      margin: 0;
+    }
+    ul.header {
+      background-color: #111;
+      padding: 0;
+    }
+    ul.header li a {
+      color: #FFF;
+      font-weight: bold;
+      text-decoration: none;
+      padding: 20px;
+      display: inline-block;
+    }
+    .content {
+      background-color: #FFF;
+      padding: 20px;
+    }
+    .content h2 {
+      padding: 0;
+      margin: 0;
+    }
+    .content li {
+      margin-bottom: 10px;
+    }
+    .active {
+      background-color: #0099FF;
+    }
+    #container {
+        padding: 50px;
+        background-color: #FFF;
+      }
+  </style>
+</head>
+
+<body>
+
+  <div id="container">
+
+  </div>
+
+
+  <script type="text/babel">
+    var { Router,
+      Route,
+      IndexRoute,
+      IndexLink,
+      hashHistory,
+      Link } = ReactRouter;
+    var destination = document.querySelector("#container");
+
+    var Home = React.createClass({
+      render: function() {
+          return (
+            <div>
+              <h2>HELLO</h2>
+              <p>This is just random text.</p>
+
+              <p>Another random text.</p>
+            </div>
+          );
+        }
+    });
+
+    var Contact = React.createClass({
+      render: function() {
+          return (
+            <div>
+              <h2>GOT QUESTIONS?</h2>
+              <p>The easiest thing to do is post on
+              our <a href="http://forum.kirupa.com">forums</a>.
+              </p>
+            </div>
+          );
+        }
+    });
+
+    /* added these components to check if the boxes work as desired */
+    var Webcam = React.createClass({
+      render: function() {
+        var webcamStyle = {
+          height: 150,
+          width: 800,
+          backgroundColor: "#ffff00"
+        };
+      return(
+      
+        <div style={webcamStyle}>
+ 
+        </div>
+        );
+      }
+    });
+
+    var BoardStream = React.createClass({
+      render: function() {
+        var boardStreamStyle = {
+          height: 400,
+          width: 800,
+          backgroundColor: "#ff0000"
+        };
+      return(
+      
+        <div style={boardStreamStyle}>
+ 
+        </div>
+        );
+      }
+    });
+
+    var PublicTokens = React.createClass({
+      render: function() {
+        var publicTokensStyle = {
+          height: 275,
+          width: 400,
+          backgroundColor: "#0000ff"
+        };
+      return(
+      
+        <div style={publicTokensStyle}>
+ 
+        </div>
+        );
+      }
+    });
+
+    var PrivateTokens = React.createClass({
+      render: function() {
+        var privateTokensStyle = {
+          height: 275,
+          width: 400,
+          backgroundColor: "#00ff00"
+        };
+      return(
+      
+        <div style={privateTokensStyle}>
+ 
+        </div>
+        );
+      }
+    });
+
+    /* this combines all the boxes in one framework */
+
+    var Screen = React.createClass({
+      render: function() {
+        var screenStyle = {
+          height: 550,
+          width: 1200,
+          padding: 0,
+          backgroundColor: "#FFF",
+          WebkitFilter: "drop-shadow(0px 0px 5px #666)",
+          filter: "drop-shadow(0px 0px 5px #666)"
+        };
+        return (
+        <div style={screenStyle}>
+        <div className="col-md-8">
+         <Webcam float="left" color={this.props.color}/>
+         <BoardStream color={this.props.color}/>
+        </div>
+        <div className="col-md-4">
+         <PublicTokens color={this.props.color}/>
+         <PrivateTokens color={this.props.color}/>
+        </div>
+        </div>
+
+        );
+      }
+    });
+
+    /*this is where the magic happens: need to call other 4 boxes from this component*/
+
+    var Stuff = React.createClass({
+      render: function() {
+          return (
+            <div>
+              <h2>GAME BOARD</h2>
+              <p>This is where everything related to game will go into</p>
+
+
+                        /*<div id="videos">
+                          <video id="localVideo" autoPlay muted width="50%" height="50%"></video>
+                          <h2>Local User</h2>
+        
+                          <tr>
+                          <td>
+                          <button id="lButton" type="button">Shift Left</button>
+                          </td>
+                          
+                          <td>
+                          <video id="remoteVideo" autoPlay width="50%" height="50%"></video>
+                          <h2>Remote User</h2>
+                          </td>
+                          
+                          <td>
+                          <video id="remoteVideo2" autoPlay width="50%" height="50%"></video>
+                          <h2>Remote User</h2>
+                          </td>
+                          
+                          <td>
+                          <video id="remoteVideo3" autoPlay width="50%" height="50%"></video>
+                          <h2>Remote User</h2>
+                          </td>
+                          
+                                                   
+                          <td>
+                          <button id="rButton" type="button">Shift Right</button>
+                          </td>
+                          </tr>
+                          
+                          <tr>
+                          <button id="connect" type="button">Connect</button>
+                          </tr>
+                      </div>*/
+
+              <Screen color={this.props.color}/>
+            </div>
+          );
+        }
+    });
+
+    var App = React.createClass({
+      render: function() {
+        return (
+          <div>
+            <h1><center>vTable</center></h1>
+            <ul className="header">
+              <li><IndexLink to="/" activeClassName="active">Home</IndexLink></li>
+              <li><Link to="/stuff" activeClassName="active">Board View</Link></li>
+              <li><Link to="/contact" activeClassName="active">Contact</Link></li>
+            </ul>
+            <div className="content">
+              {this.props.children}
+            </div>
+          </div>
+        )
+      }
+    });
+
+    ReactDOM.render(
+      <Router history={hashHistory}>
+        <Route path="/" component={App}>
+          <IndexRoute component={Home}/>
+          <Route path="stuff" component={Stuff} />
+          <Route path="contact" component={Contact} />
+        </Route>
+      </Router>,
+      destination
+    );
+  </script>
+</body>
+
+</html>
