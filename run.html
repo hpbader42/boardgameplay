@@ -40,15 +40,14 @@
                     <header class="major">
                     <h2>Demo</h2>
                       </header>
-                      <center>
-                      <table>
                        <center>
 
-                        <div id="videos">
-                          <video id="localVideo" autoplay muted width="50%" height="50%"></video>
-                          <h2>Local User</h2>
-        
-                          <tr>
+
+                        <div class="container">
+                        <div class="row">
+                          <div class="col-md-8"> 
+                          <div id = "remote users" style="width:100%;">
+                          <tr>       
                           <td>
                           <button id="lButton" type="button">Shift Left</button>
                           </td>
@@ -67,25 +66,46 @@
                           <video id="remoteVideo3" autoplay width="50%" height="50%"></video>
                           <h2>Remote User</h2>
                           </td>
-                          
-                                                   
+
                           <td>
                           <button id="rButton" type="button">Shift Right</button>
                           </td>
                           </tr>
+                          </div>
+                          </div>
+                          <div class="col-md-4">
+                          <div id = "public tokens" style="width:150%;">
+
+                            <h2>Public tokens</h2>
+
+                          </div>
+                          </div>
+                          </div>
                           
-                          <tr>
-                          <button id="connect" type="button">Connect</button>
-                          </tr>
+                          <div class="row">
+                          <div class="col-md-8">
+                            <div id = "board screen" style="width:150%;">
+                            <h1>Board Screen</h1>
+                            </div>
+                          </div>
+                          </div>
+                          
+                          <div class="col-md-4">
+                            <div id = "private tokens" style="width:150%;">
+
+                            <h2>Private tokens</h2>
+                            </div>
+                            
+                          </div>
+
+                        </div>
                       </div>
+
 
                   <script src="/socket.io/socket.io.js"></script>
                   <script src="js/lib/adapter.js"></script>
                   <script src="js/main.js"></script>
                   </center>
-
-                </table>
-                </center>
 
               </section>
 
