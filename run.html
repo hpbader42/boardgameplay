@@ -39,10 +39,11 @@
                   <h2>Demo</h2>
                   <center>
                    <label>Enter room name: </label>
-                  <form>
-                  <input type="submit" value="Connect" style="float: right" />
+                  <form  action="" method="get" onsubmit="return updateTable();">
+                  <input type="button" value="Connect" style="float: right" id="connectButton"</button>
+                  <!-- <input type="submit" value="Connect" style="float: right" id="connectButton" /> -->
                    <div style="overflow: hidden; padding-right: .5em;">
-                    <input type="text" style="width: 100%;" />
+                    <input type="text" style="width: 100%;" id="roomTextBox"/>
                   </div>​
                   </form>
                   </center>
@@ -163,7 +164,7 @@
 
               <script src="/socket.io/socket.io.js"></script>
               <script src="js/lib/adapter.js"></script>
-              <script src="js/main.js"></script>
+              <script src="js/run.js"></script>
               </center>
 
           </section>
