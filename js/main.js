@@ -9,87 +9,26 @@ var localStream;
 var remoteStream;
 
 var pc;
+var pcArray = new Array();
 var turnReady;
+
+//renegotiation variables
+var renegotiate = false;
+var send_to_id = -1;
+var renegotiateID = 0;
+var renegotiateLoop = false;
 
 var pcConfig = {
   'iceServers': [{
     'urls': 'stun:stun.l.google.com:19302'
-  }]
-};
-
-// Set up audio and video regardless of what devices are present.
-var sdpConstraints = {
-  offerToReceiveAudio: true,
-  offerToReceiveVideo: true
-};
-
-/////////////////////////////////////////////
-
-//var room = 'foo';
-// Could prompt for room name:
-var room = prompt('Enter room name:');
-
-var socket = io.connect();
-
-if (room !== '') {
-  socket.emit('create or join', room);
-  console.log('Attempted to create or  join room', room);
-}
-
-socket.on('created', function(room) {
-  console.log('Created room ' + room);
-  isInitiator = true;
-});
-
-socket.on('full', function(room) {
-  console.log('Room ' + room + ' is full');
-});
-
-socket.on('join', function (room){
-  console.log('Another peer made a request to join room ' + room);
-  console.log('This peer is the initiator of room ' + room + '!');
-  isChannelReady = true;
-});
-
-socket.on('joined', function(room) {
-  console.log('joined: ' + room);
-  isChannelReady = true;
-});
-
-socket.on('log', function(array) {
-  console.log.apply(console, array);
-});
-
-////////////////////////////////////////////////
-
-function sendMessage(message) {
-  console.log('Client sending message: ', message);
-  socket.emit('message', message);
-}
-
-// This client receives a message
-socket.on('message', function(message) {
-  console.log('Client received message:', message);
-  if (message === 'got user media') {
-    maybeStart();
-  } else if (message.type === 'offer') {
-    if (!isInitiator && !isStarted) {
-      maybeStart();
-    }
-    pc.setRemoteDescription(new RTCSessionDescription(message));
-    doAnswer();
-  } else if (message.type === 'answer' && isStarted) {
-    pc.setRemoteDescription(new RTCSessionDescription(message));
-  } else if (message.type === 'candidate' && isStarted) {
-    var candidate = new RTCIceCandidate({
-      sdpMLineIndex: message.label,
-      candidate: message.candidate
-    });
-    pc.addIceCandidate(candidate);
-  } else if (message === 'bye' && isStarted) {
-    handleRemoteHangup();
+  },
+  {
+	  'urls': 'turn:testuser@34.211.62.124:3478',
+  	  'credential': 'ireallyhopethatthiscanwork'
+	  
   }
-});
+  ]
+};
 
 ////////////////////////////////////////////////////
 
@@ -97,42 +36,265 @@ var audioInputSelect = document.querySelector('audioSource');
 var audioOutputSelect = document.querySelector('audioOutput');
 var localVideo = document.querySelector('#localVideo');
 var remoteVideo = document.querySelector('#remoteVideo');
-var remoteVideo2 = document.querySelector('#remoteVid2');
-var numPeeps = 1;
+var remoteVideo2 = document.querySelector('#remoteVideo2');
+var remoteVideo3 = document.querySelector('#remoteVideo3');
+
+var streamArray = new Array();
+var socketArray = new Array();
+//might be able to remove socketArray
+
+var mySockNum = 0;
+var streamAray = new Array();
+var playerArray = new Array();
+var vidArrayIndex = 0;
+var numPeople = 0;
+
+var rBtn = document.getElementById('lButton');
+var lBtn = document.getElementById('rButton');
+var connectBtn = document.getElementById('connect');
+rBtn.addEventListener('click', shiftRight);
+lBtn.addEventListener('click', shiftLeft);
+connectBtn.addEventListener('click', debug);
+
+///////////////////////////////////////////////////////
+
+// Set up audio and video regardless of what devices are present.
+var sdpConstraints = {
+  offerToReceiveAudio: true,
+  offerToReceiveVideo: true
+};
 
 
 
+//////////////////////////////////////////////////////////
+//var room = 'foo';
+// Could prompt for room name:
+var room = prompt('Enter room name:');
+
+var socket = io.connect();
+
+//Get User Media Stuff
+//////////////////////////////////////////////////////////////
 navigator.mediaDevices.getUserMedia({
-  audio: true,
-  video: true
+audio: true,
+video: true
 })
 .then(gotStream)
 .catch(function(e) {
-  alert('getUserMedia() error: ' + e.name);
+alert('getUserMedia() error: ' + e.name);
 });
 
 function gotStream(stream) {
-	
-	//called on initiation - after camera and mic are obtain
-  console.log('Adding local stream.');
-  localVideo.src = window.URL.createObjectURL(stream);
-  //localVideo.srcObject = stream;
-  localStream = stream;
-  sendMessage('got user media');
-  if (isInitiator) {
-    maybeStart();
-  }
+
+//called on initiation - after camera and mic are obtain
+console.log('Adding local stream.');
+localVideo.src = window.URL.createObjectURL(stream);
+//localVideo.srcObject = stream;
+localStream = stream;
+sendMessage('got user media');
+if (isInitiator) {
+maybeStart();
+}
 }
 
-function gotRemoteStream(stream){
-	
+
+///////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////
+
+function debug(){
+
+//	if(isInitiator){
+//		pcArray.forEach(function(indivPC) {
+//			var streamArrayCopy = streamArray;
+//			if(indivPC){
+//
+//				streamArrayCopy.forEach(function(streamCopy){
+//					var addThisStream = true;
+//					indivPC.getRemoteStreams().forEach(function(remoteStream){
+//						if(remoteStream.id === streamCopy.id){
+//							addThisStream = false;
+//						}						
+//					});
+//					if(addThisStream){
+//						console.log('adding stream');
+//						indivPC.addStream(streamCopy);
+//					}
+//				});
+//			}
+//	      });	
+//	}
+    if(isInitiator){
+    	//socket.emit('update', room, streamArray);
+    }
+    
+	pcArray.forEach(function(indivPC) {
+		if(indivPC){
+			console.log("-----------------");
+			console.log("peer connection");
+			console.log(indivPC);
+			console.log("remote description");
+			console.log(indivPC.remoteDescription);
+			console.log("local streams");
+			console.log(indivPC.getLocalStreams());
+			console.log("remote streams");
+			console.log(indivPC.getRemoteStreams());
+		}
+      });
+	setVideoDisplays();
 }
 
-var constraints = {
-  video: true
-};
+function shiftLeft(){
+	if (streamArray.length >= 4){
+		if(vidArrayIndex > 0){
+			vidArrayIndex+=-1;
+		}
+	}
+	setVideoDisplays();
+}
 
-console.log('Getting user media with constraints', constraints);
+function shiftRight(){
+	if (streamArray.length >= 4){
+		if(vidArrayIndex < streamArray.length-3){
+			vidArrayIndex+=1;
+		}
+	}
+	setVideoDisplays();
+}
+
+function setVideoDisplays(){
+	console.log(">>>>>")
+	console.log("Is initiator" + isInitiator);
+	console.log("My socket id " + mySockNum);
+	
+	console.log("in set video displays");
+	var numVids = streamArray.length;
+
+	streamArray.forEach(function(stream){
+		console.log("*****************")
+		console.log(stream);
+	});
+	
+	if(numVids){
+		if(numVids === 1){
+			//remoteVideo.srcObject = streamArray[0];
+			remoteVideo.src = window.URL.createObjectURL(streamArray[0]);
+			console.log("numVids is 1 trying to set remotevideo 1")
+		}
+		else if(numVids ===2){
+			//remoteVideo.srcObject = streamArray[0];
+			//remoteVideo2.srcObject = streamArray[1];
+			remoteVideo.src = window.URL.createObjectURL(streamArray[0]);
+			remoteVideo2.src = window.URL.createObjectURL(streamArray[1]);
+			
+		}else if(numVids >=3){
+			//remoteVideo.srcObject = streamArray[vidArrayIndex+0];
+			//remoteVideo2.srcObject = streamArray[vidArrayIndex+1];
+			//remoteVideo3.srcObject = streamArray[vidArrayIndex+2];
+			remoteVideo.src = window.URL.createObjectURL(streamArray[vidArrayIndex+0]);
+			remoteVideo2.src = window.URL.createObjectURL(streamArray[vidArrayIndex+1]);
+			remoteVideo3.src = window.URL.createObjectURL(streamArray[vidArrayIndex+2]);
+			
+		}
+			
+	}
+	console.log("number of videos = "+ numVids);
+	  
+	     
+}
+///////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+if (room !== '') {
+  socket.emit('create or join', room);
+  console.log('Attempted to create or  join room', room);
+}
+////////////////////////////////////////////////////////////////
+socket.on('created', function(room, client) {
+  console.log('Created room ' + room);
+  mySockNum = 1;
+  socketArray.push(client);
+  isInitiator = true;
+  
+});
+
+socket.on('full', function(room) {
+  console.log('Room ' + room + ' is full');
+});
+
+socket.on('join', function (inRoom, clientNo){
+	if(room ===inRoom){
+		if(isInitiator){
+			console.log('Another peer made a request to join room ' + room);
+			renegotiateID = 0;
+			renegotiateLoop = false;
+		}else{
+			if(mySockNum ===0){
+				mySockNum = clientNo;
+			}
+		}	
+	}
+	
+	console.log('Called join');
+  isChannelReady = true;
+
+});
+
+
+
+
+socket.on('joined', function(room, id) {
+  console.log('joined: ' + room);
+  isChannelReady = true;
+});
+
+socket.on('test', function(myName){
+	console.log("Im testing" + myName);
+});
+
+socket.on('log', function(array) {
+  console.log.apply(console, array);
+});
+
+socket.on('catch_up', function(inStreamArray, inPlayerArray){
+	if(!isInitiator){
+		var streamArrayCopy = streamArray;
+		var addedStream = 0;
+		inStreamArray.forEach(function(inStream){
+			if(inStream){
+					
+				var addThisStream = true;
+				streamArrayCopy.forEach(function(streamCopy){
+					if(!inStream.id){
+						addThisStream = false;
+					}
+					if(inStream.id === streamCopy.id){
+						addThisStream = false;
+					}
+				});
+				if(addThisStream){
+					console.log("pushing stream");
+					console.log(inStream);
+					streamArray.push(inStream);
+					addedStream = addedStream+1;
+				}
+			}
+		});
+		console.log("added " + addedStream + " streams");
+	}
+
+	setVideoDisplays();
+});
+
+////////////////////////////////////////////////
+
+function sendMessage(message, from_id, to_id) {
+  console.log('Client sending message: ', message);
+  socket.emit('message', message, room, from_id, to_id);
+  //might want to emit only to room
+}
+
+
 
 if (location.hostname !== 'localhost') {
   requestTurn(
@@ -143,9 +305,10 @@ if (location.hostname !== 'localhost') {
 function maybeStart() {
   console.log('>>>>>>> maybeStart() ', isStarted, localStream, isChannelReady);
   //if (!isStarted && typeof localStream !== 'undefined' && isChannelReady) {
-  if ( typeof localStream !== 'undefined' && isChannelReady) {
+  if ( (!isStarted || isInitiator) &&typeof localStream !== 'undefined' && isChannelReady) {
 	console.log('>>>>>> creating peer connection');
-    createPeerConnection();
+    //RTCPeer start
+	createPeerConnection();
     pc.addStream(localStream);
     isStarted = true;
     console.log('isInitiator', isInitiator);
@@ -153,30 +316,174 @@ function maybeStart() {
       doCall();
     }
   }
-  console.log("testing3");
 
 }
 
-window.onbeforeunload = function() {
-  sendMessage('bye');
-  socket.close();
-};
+//This client receives a message
+socket.on('message', function(message, to_id) {
+  console.log('Client received message:', message);
+  if (message === 'got user media') {
+    maybeStart();
+  } else if (message.type === 'offer') {
+	 console.log("offer made");
+    if (!isInitiator && !isStarted) {
+      maybeStart();
+      pc.setRemoteDescription(new RTCSessionDescription(message));
+      doAnswer();
+    }
+    if(isStarted){
+    	if(to_id === mySockNum){
+    		console.log('offer to reinitiate made to me');
+    		pc.setRemoteDescription(new RTCSessionDescription(message)).then(doAnswer);
+    		console.log('should have answered request to reinitiate');
+    	}
+    }
+//	 if( !isInitiator && (to_id == mySockNum) ){
+//		console.log("in here - should be?");
+//        pc.setRemoteDescription(new RTCSessionDescription(message));
+//        doAnswer();
+//	 }
+//    if(isInitiator){
+//    	console.log("in here - should be?");
+//    	pc.setRemoteDescription(new RTCSessionDescription(message));
+//    	doAnswer();
+//    }
+//    pc.setRemoteDescription(new RTCSessionDescription(message));
+ //   doAnswer();
+
+  } else if (message.type === 'answer' && isStarted) {
+	  if(isInitiator){
+		  //initiator sends offer and receives answer
+		pc.setRemoteDescription(new RTCSessionDescription(message));
+		console.log("handled answer");
+		
+		if(renegotiateLoop){
+	    	var count = streamArray.length;
+	    	console.log('The stream array is ' + count + ' long');
+	    	//for 2 streams, we go to ids 2 & 3
+	    	if( count > 1){
+	    		if(renegotiateID === 0){
+	    			renegotiateID = 2;
+	    		}
+	    		
+	    		if(renegotiateID <= count+1){
+	    			renegotiateID = renegotiateID + 1;
+	    	  		console.log('renegotiating ' + renegotiateID-1);
+	    			renegotiatePeerConnection(renegotiateID-1);
+	    		}else{
+	    			renegotiateID = 0;
+	    			console.log('done renegotiating');
+	    			renegotiateLoop = false;
+	    		}
+	    		
+	    	}
+			
+		}
+		//add to connection array
+		
+		//on an answer reconnect all sessions if required
+	  }
+  } else if (message.type === 'candidate' && isStarted) {
+	  console.log('Received candidate');
+	  var candidate = new RTCIceCandidate({
+      sdpMLineIndex: message.label,
+      candidate: message.candidate
+    });
+    pc.addIceCandidate(candidate);
+  } 
+  
+  
+  //  else if (message === 'renegotiate' && isStarted && to_id === mySockNum){
+//	  //if a message to renegotiate is sent, I am started, and I am specified by id
+//	  
+//	  
+//	  pc.setRemoteDescription(new RTCSessionDescription(message));
+//	  doAnswer();
+//	  if ( (!isStarted || isInitiator) &&typeof localStream !== 'undefined' && isChannelReady) {
+//		console.log('>>>>>> renegotiating peer connection');
+//	    //RTCPeer start
+//		renegotiatePeerConnection(to_id);
+//		console.log('isInitiator', isInitiator);
+//	    if (isInitiator) {
+//	    	  console.log('Sending offer to peer');
+//	    	  pc.createOffer(setLocalAndSendMessage, handleCreateOfferError);
+//	    }
+//	  }
+//}  
+   else if (message === 'bye' && isStarted) {
+    handleRemoteHangup();
+  }
+});
+
 
 /////////////////////////////////////////////////////////
 
 function createPeerConnection() {
   try {
+	console.log('<<<<<< in createPeerConnection')
     pc = new RTCPeerConnection(null);
     
     pc.onicecandidate = handleIceCandidate;
     pc.onaddstream = handleRemoteStreamAdded;
     pc.onremovestream = handleRemoteStreamRemoved;
+    //pc.onnegotiationneeded = handleRenegotiation;
     console.log('Created RTCPeerConnnection');
   } catch (e) {
     console.log('Failed to create PeerConnection, exception: ' + e.message);
     alert('Cannot create RTCPeerConnection object.');
     return;
   }
+}
+
+function renegotiatePeerConnection(to_id){
+	try{
+		console.log('****** in adjustPeerConnection');
+		var backupPC = pc;
+		pc = pcArray[to_id-2];
+		console.log("peer connection being changed");
+		console.log(pcArray);
+		console.log(to_id-2);
+		console.log(pc);
+		
+		send_to_id = to_id;
+		
+	    var streamArrayCopy = streamArray;
+		streamArrayCopy.forEach(function(streamCopy){
+		var addThisStream = true;
+		
+			pc.getLocalStreams().forEach(function(localStream){
+	//		indivPC.getRemoteStreams().forEach(function(remoteStream){
+				var remStream = pc.getRemoteStreams()[0];
+				console.log(remStream);
+				if(localStream.id === streamCopy.id || streamCopy.id === remStream.id){
+					addThisStream = false;
+				}						
+			});
+			if(addThisStream){
+				console.log('adding stream');
+				pc.addStream(streamCopy);
+			}
+			//later update to remove if strream is gones
+		});
+
+		
+		
+	      renegotiate = true;
+	      console.log('normal PC ---')
+	      console.log('creating offer');
+	      console.log(pc.id);
+	      console.log(pc.getRemoteStreams());
+	      console.log(pc.getLocalStreams());
+	      pc.createOffer(setLocalAndSendMessage, handleCreateOfferError);
+	      console.log('about to reset pc');
+	      //pc = backupPC;
+	      
+	}  catch (e) {
+	    console.log('Failed to renegotiate PeerConnection, exception: ' + e.message);
+	    return;
+	  }
+	
+	//loop to add everyone's stream
 }
 
 function handleIceCandidate(event) {
@@ -187,27 +494,69 @@ function handleIceCandidate(event) {
       label: event.candidate.sdpMLineIndex,
       id: event.candidate.sdpMid,
       candidate: event.candidate.candidate
-    });
+    }, 
+    mySockNum
+    );
   } else {
     console.log('End of candidates.');
-  }
+//    var pcPush = pc;
+//    pcArray.push(pcPush);
+    
+    
+ 
+    }
+
+}
+
+function handleRenegotiation(event){
+	console.log("++++ renegotiating");
+	console.log(event);
+	//pc.createOffer(setLocalAndSendMessage, null);
 }
 
 function handleRemoteStreamAdded(event) {
   console.log('Remote stream added.');
-  if(numPeeps ===2 ){
-	  //remoteVideo2.src = window.URL.createObjectURL(event.stream);
-	  remoteVideo2.srcObject = event.stream;
-  }else{
-	  //remoteVideo.src = window.URL.createObjectURL(event.stream);	  
-	  remoteVideo.srcObject = event.stream;
-	  numPeeps =2;
-  }
-  console.log(window.URL.createObjectURL(event.stream));
-  console.log('Remote video source is: ' + remoteVideo.src);
+  console.log(event);
   
+
+  console.log('streamArrayLength before push' + streamArray.length);
+  streamArray.push(event.stream);
+  console.log('streamArrayLength after push' + streamArray.length);
+
+  setVideoDisplays();
   remoteStream = event.stream;
-   
+  console.log('Remote video source is: ' + remoteVideo.src);
+  console.log("I am initiator " + isInitiator);    
+  if(isInitiator){
+
+	var pcPush = pc;
+	pcArray.push(pcPush);
+  	//update clients 2 & 3 if we have 3 streams
+  	//later make sure we have the right streams
+  	//make sure most recent pc is correct
+  	
+  	var count = streamArray.length;
+  	console.log('The stream array is ' + count + ' long');
+  	
+//    for 2 streams, we go to ids 2 & 3
+  	if( count > 1){
+  		renegotiateLoop = true;
+  		if(renegotiateID === 0){
+  			renegotiateID = 2;
+  		}
+  		
+  		if(renegotiateID <= count+1){
+  			renegotiateID = renegotiateID + 1;
+  	  		console.log('renegotiating ' + renegotiateID-1);
+  			renegotiatePeerConnection(renegotiateID-1);
+  		}else{
+  			console.log('done renegotiating');
+  			renegotiateID = 0;
+  		}
+  		
+  	}
+  }
+    
 }
 
 function handleCreateOfferError(event) {
@@ -219,6 +568,7 @@ function doCall() {
   pc.createOffer(setLocalAndSendMessage, handleCreateOfferError);
 }
 
+
 function doAnswer() {
   console.log('Sending answer to peer.');
   pc.createAnswer().then(
@@ -229,20 +579,32 @@ function doAnswer() {
 
 function setLocalAndSendMessage(sessionDescription) {
   // Set Opus as the preferred codec in SDP if Opus is present.
+  
+  console.log('printing session Description');
+  console.log(sessionDescription);
   sessionDescription.sdp = preferOpus(sessionDescription.sdp);
+  console.log('about to set local description');
   pc.setLocalDescription(sessionDescription);
   console.log('setLocalAndSendMessage sending message', sessionDescription);
-  sendMessage(sessionDescription);
+  if(renegotiate && send_to_id > -1){
+	  console.log('in renegotiate');
+	  sendMessage(sessionDescription, -1, send_to_id);
+	  renegotiate = false;
+	  send_to_id = -1;
+  }else{
+	  sendMessage(sessionDescription);  
+  }
 }
 
 function onCreateSessionDescriptionError(error) {
-  trace('Failed to create session description: ' + error.toString());
+  console.log('Failed to create session description: ' + error.toString());
+  console.log('On create sessionDescription error');
 }
 
 function requestTurn(turnURL) {
   var turnExists = false;
   for (var i in pcConfig.iceServers) {
-    if (pcConfig.iceServers[i].url.substr(0, 5) === 'turn:') {
+    if (pcConfig.iceServers[i].urls.substr(0, 5) === 'turn:') {
       turnExists = true;
       turnReady = true;
       break;
@@ -271,12 +633,16 @@ function requestTurn(turnURL) {
 
 function handleRemoteStreamRemoved(event) {
   console.log('Remote stream removed. Event: ', event);
+  delete streamArray[streamArray.indexOf(event.stream)];
+  console.log('removed from array');
+  setVideoDisplays();
+  
 }
 
 function hangup() {
   console.log('Hanging up.');
   stop();
-  sendMessage('bye');
+  sendMessage('bye by ' + mySockNum);
 }
 
 function handleRemoteHangup() {
@@ -370,3 +736,10 @@ function removeCN(sdpLines, mLineIndex) {
   sdpLines[mLineIndex] = mLineElements.join(' ');
   return sdpLines;
 }
+
+
+window.onbeforeunload = function() {
+	  //sendMessage('bye', room);
+	  	socket.emit('bye', room);
+		socket.close();
+	};
