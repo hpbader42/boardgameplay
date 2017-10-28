@@ -20,11 +20,11 @@ function Player(myId){
 
 
 
-    this.addToken = function(inToken){
+    this.addToken = function(inToken, number=1){
         if (inToken instanceof token){
             if (this.tokenList == null){
                 this.tokenList = new Map();
-                this.tokenList.set(inToken, 1);
+                this.tokenList.set(inToken, number);
             }
             else{
                 var found = 0;
@@ -32,12 +32,12 @@ function Player(myId){
                     console.log(elem.type);
                     if (elem.type == inToken.type){
                         console.log(inToken.type);
-                        this.tokenList.set(elem, this.tokenList.get(elem)+1);
+                        this.tokenList.set(elem, this.tokenList.get(elem)+number);
                         found = 1;
                     }
                 }
                 if(found ==0){
-                    this.tokenList.set(inToken, 1);
+                    this.tokenList.set(inToken, number);
                 }
             }    
         }
