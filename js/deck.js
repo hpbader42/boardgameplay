@@ -22,14 +22,14 @@ function deck(){
         }   
     }
 
-    this.shuffle() = function(){
-        for (var i = 1; i <= this.numDisCards; i++) {
-            var index = Math.floor((Math.random() * this.numCards) );
-            var card = this.cardList[index];
-            this.cardList.splice(index, 1);
-            this.numCards = this.numCards -1;
-            this.discardList.append(card);
+    this.shuffle = function(){
+        for (var i = 0; i < this.numDisCards; i++) {
+            var card = this.discardList[0];
+            this.cardList.splice(0, 1);
+            this.cardList.append(card);
+            this.numCards = this.numCards +1;            
         }
+        this.numDisCards=0;
     }
 
     this.deal = function(number = 1){
@@ -60,6 +60,14 @@ function deck(){
             this.numCards = this.numCards -1;
             this.discardList.append(card);
         }
+    }
+
+    this.searchDiscard = function(){
+
+    }
+
+    this.searchDeck = function(){
+        
     }
 
     this.setPOwn = function(pOwn){

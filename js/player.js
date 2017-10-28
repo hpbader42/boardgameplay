@@ -4,11 +4,11 @@ function Player(myId){
     this.group = 1;
     this.stream = null;
     this.changed = false;
-    this.tokenList = null;
-    this.cardList = null;
-    this.figureList = null;
-    this.diceList = null;
-    this.attributeList = null;
+    this.tokenMap = null;
+    this.deckMap = null;
+    this.figurineMap = null;
+    this.diceMap = null;
+    this.attributeMap = null;
 
 
     this.setTeam = function(team){
@@ -18,9 +18,28 @@ function Player(myId){
         this.stream = stream;
     }
 
-    this.addToken = function(Token){
-        if (this.tokenList == null){
-            this.tokenList = new Map();
+
+
+    this.addToken = function(inToken){
+        if (inToken instanceof token){
+            if (this.tokenList == null){
+                this.tokenList = new Map();
+                this.tokenList.set(inToken, 1);
+            }
+            else{
+                var found = 0;
+                for( elem in this.tokenList.keys()){
+                    console.log(elem.type);
+                    if (elem.type == inToken.type){
+                        console.log(inToken.type);
+                        this.tokenList.set(elem, this.tokenList.get(elem)+1);
+                        found = 1;
+                    }
+                }
+                if(found ==0){
+                    this.tokenList.set(inToken, 1);
+                }
+            }    
         }
     }
 

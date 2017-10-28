@@ -1,8 +1,8 @@
 //card.js
-function card(id=0, map=0, side=0, pOwn=0, gOwn=0, loc=null, vis=false){
+function card(id=0, type=0, side=0, pOwn=0, gOwn=0, loc=null, vis=false){
     
         this.id = id;
-        this.map = map;
+        this.type = type;
         if(side ==1){
             this.side = side;            
         }else{
