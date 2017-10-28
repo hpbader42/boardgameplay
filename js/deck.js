@@ -1,7 +1,7 @@
 //deck
 function deck(){
 
-    this.cardList = new array();
+    this.cardList = new Array();
     this.numCards = 0;
 
     this.add = function(inCardList){
@@ -14,7 +14,7 @@ function deck(){
         }); 
     }
     
-    this.shuffle() = function(){
+    this.shuffle = function(){
 
     }
 
