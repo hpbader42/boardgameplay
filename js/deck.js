@@ -1,8 +1,8 @@
 //deck
 function deck(){
 
-    this.cardList = new array();
-    this.discardList = new array();
+    this.cardList = new Array();
+    this.discardList = new Array();
     this.otherRegions = null;
     this.numCards = 0;
     this.numDisCards =0;
@@ -21,6 +21,11 @@ function deck(){
             });
         }   
     }
+<<<<<<< HEAD
+=======
+    
+    this.shuffle = function(){
+>>>>>>> f2e988ef0cc9632d390085c718d640dbc98355b7
 
     this.shuffle() = function(){
         for (var i = 1; i <= this.numDisCards; i++) {
