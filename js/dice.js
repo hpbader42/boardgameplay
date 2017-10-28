@@ -1,8 +1,8 @@
 //dice.js
-function dice(numSides=6, array=new array(1,2,3,4,5,6)){
+function dice(numSides=6, array=[1,2,3,4,5,6]){
     
     this.myArray = array
-    this.N = numSide;
+    this.N = numSides;
     this.active = false;
     this.pOwn = 0;
     this.gOwn = 0;
@@ -14,7 +14,7 @@ function dice(numSides=6, array=new array(1,2,3,4,5,6)){
         this.gOwn = gOwn;
     }
 
-    this.setActive() =function(){
+    this.setActive = function(){
         this.active = true;
     }
     this.setInActive = function(){
@@ -30,7 +30,7 @@ function dice(numSides=6, array=new array(1,2,3,4,5,6)){
         //
     }
 
-    this.roll() = function(){
+    this.roll = function(){
         return this.myArray[Math.floor((Math.random() * this.N) )];
     }
 }
