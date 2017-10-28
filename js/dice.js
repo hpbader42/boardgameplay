@@ -7,30 +7,30 @@ function dice(numSides=6, array=new array(1,2,3,4,5,6)){
     this.pOwn = 0;
     this.gOwn = 0;
 
-    function setPOwn(pOwn){
+    this.setPOwn = function(pOwn){
         this.pOwn = pOwn;
     }
-    function setGOwn(gOwn){
+    this.setGOwn = function(gOwn){
         this.gOwn = gOwn;
     }
 
-    function setActive(){
+    this.setActive() =function(){
         this.active = true;
     }
-    function setInactive(){
+    this.setInActive = function(){
         this.active = false;
     }
 
-    function clearDie(){
+    this.clearDie = function(){
         this.N = 0;
         this.myArray = null;
         this.active = false;
     }
-    function adjustDie(indexArray, changeArray){
+    this.adjustDie = function(indexArray, changeArray){
         //
     }
 
-    function roll(){
+    this.roll() = function(){
         return this.myArray[Math.floor((Math.random() * this.N) )];
     }
 }

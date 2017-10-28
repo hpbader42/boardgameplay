@@ -4,7 +4,7 @@ function deck(){
     this.cardList = new array();
     this.numCards = 0;
 
-    function add(inCardList){
+    this.add = function(inCardList){
         
         inCardList.forEach(function(element) {
             if (element instanceof card){
@@ -14,18 +14,18 @@ function deck(){
         }); 
     }
     
-    function shuffle(){
+    this.shuffle() = function(){
 
     }
 
-    function deal(){
+    this.deal = function(){
 
     }
 
-    function setPOwn(pOwn){
+    this.setPOwn = function(pOwn){
         this.pOwn = pOwn;
     }
-    function setGOwn(gOwn){
+    this.setGOwn = function(gOwn){
         this.gOwn = gOwn;
     }
 }
