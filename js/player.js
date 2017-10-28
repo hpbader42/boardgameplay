@@ -10,14 +10,14 @@ function Player(myId){
     this.diceList = null;
 
 
-    this.setTeam() = function(team){
+    this.setTeam = function(team){
         this.group = team;
     }
-    this.setStream() = function(stream){
+    this.setStream = function(stream){
         this.stream = stream;
     }
 
-    this.addToken() = function(Token){
+    this.addToken = function(Token){
         if (this.tokenList == null){
             this.tokenList = new Map();
 
