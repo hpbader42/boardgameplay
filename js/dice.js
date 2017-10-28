@@ -1,11 +1,11 @@
 //dice.js
 function dice(numSides=6, array=new array(1,2,3,4,5,6)){
     
-    var myArray = array
-    var N = numSide;
-    var active = false;
-    var pOwn = 0;
-    var gOwn = 0;
+    this.myArray = array
+    this.N = numSide;
+    this.active = false;
+    this.pOwn = 0;
+    this.gOwn = 0;
 
     function setPOwn(pOwn){
         this.pOwn = pOwn;
@@ -21,6 +21,11 @@ function dice(numSides=6, array=new array(1,2,3,4,5,6)){
         this.active = false;
     }
 
+    function clearDie(){
+        this.N = 0;
+        this.myArray = null;
+        this.active = false;
+    }
     function adjustDie(indexArray, changeArray){
         //
     }
