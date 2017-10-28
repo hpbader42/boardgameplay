@@ -8,6 +8,7 @@ function Player(myId){
     this.cardList = null;
     this.figureList = null;
     this.diceList = null;
+    this.attributeList = null;
 
 
     this.setTeam() = function(team){
@@ -20,7 +21,6 @@ function Player(myId){
     this.addToken() = function(Token){
         if (this.tokenList == null){
             this.tokenList = new Map();
-
         }
     }
 
