@@ -1,0 +1,5 @@
+//card.js
+function card(){
+
+    
+}
