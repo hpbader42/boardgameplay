@@ -9,13 +9,13 @@ function deck(){
 
     this.add = function(inCardList){
         if (inCardList instanceof card){
-            this.cardList.append(inCardList);
+            this.cardList.push(inCardList);
             this.numCards = this.numCards+1;
         }
         else if(inCardList instanceof Array){
             inCardList.forEach(function(element) {
                 if (element instanceof card){
-                    this.cardList.append(element);
+                    this.cardList.push(element);
                     this.numCards = this.numCards + 1;    
                 }
             });
@@ -26,7 +26,7 @@ function deck(){
         for (var i = 0; i < this.numDisCards; i++) {
             var card = this.discardList[0];
             this.cardList.splice(0, 1);
-            this.cardList.append(card);
+            this.cardList.push(card);
             this.numCards = this.numCards +1;            
         }
         this.numDisCards=0;
@@ -46,7 +46,7 @@ function deck(){
                 var card = this.cardList[index];
                 this.cardList.splice(index, 1);
                 this.numCards = this.numCards -1;
-                returner.append(card);        
+                returner.push(card);        
             }
             return returner;
         }
@@ -58,7 +58,7 @@ function deck(){
             var card = this.cardList[index];
             this.cardList.splice(index, 1);
             this.numCards = this.numCards -1;
-            this.discardList.append(card);
+            this.discardList.push(card);
         }
     }
 
